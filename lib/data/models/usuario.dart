@@ -4,7 +4,7 @@ enum TipoUsuario {
 }
 
 class Usuario {
-  final String id;
+  final int id;
   final String nome;
   final String email;
   final TipoUsuario tipo;

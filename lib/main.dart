@@ -1,4 +1,5 @@
 import 'package:entrega_app/data/models/usuario.dart';
+import 'package:entrega_app/data/models/entrega.dart';
 import 'package:entrega_app/data/services/usuario_service.dart';
 import 'package:entrega_app/presentation/screens/cliente/home_page.dart';
 import 'package:entrega_app/presentation/screens/cliente/entregas_page.dart';
@@ -7,6 +8,7 @@ import 'package:entrega_app/presentation/screens/cliente/login_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/home_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/entregas_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/perfil_page.dart';
+import 'package:entrega_app/presentation/screens/motorista/entrega_detalhes_page.dart';
 import 'package:entrega_app/presentation/widgets/cliente_drawer.dart';
 import 'package:flutter/material.dart';
 
@@ -29,6 +31,10 @@ class MainApp extends StatelessWidget {
       routes: {
         '/home': (context) => const MainScreen(),
         '/login': (context) => const LoginPage(),
+        '/motorista/entrega-detalhes': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Entrega;
+          return EntregaDetalhesPage(entrega: args);
+        },
       },
     );
   }
