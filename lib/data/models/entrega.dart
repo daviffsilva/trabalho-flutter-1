@@ -46,7 +46,7 @@ class Entrega {
       latitude: json['latitude'] as double?,
       longitude: json['longitude'] as double?,
       status: StatusEntrega.values.firstWhere(
-        (e) => e.toString().split('.').last == json['status'],
+        (e) => e.toString().split('.').last.toUpperCase() == (json['status'] as String).toUpperCase(),
       ),
       dataCriacao: DateTime.parse(json['dataCriacao'] as String),
       dataEntrega: json['dataEntrega'] != null
