@@ -40,8 +40,8 @@ class Entrega {
   factory Entrega.fromJson(Map<String, dynamic> json) {
     return Entrega(
       id: json['id'] as int,
-      clienteId: json['clienteId'] as int,
-      motoristaId: json['motoristaId'] as int,
+      clienteId: json['clienteId'] is int ? json['clienteId'] : int.parse(json['clienteId']),
+      motoristaId: json['motoristaId'] is int ? json['motoristaId'] : int.parse(json['motoristaId']),
       endereco: json['endereco'] as String,
       latitude: json['latitude'] as double?,
       longitude: json['longitude'] as double?,
