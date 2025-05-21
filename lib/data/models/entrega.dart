@@ -37,8 +37,8 @@ class Entrega {
   factory Entrega.fromMap(Map<String, dynamic> map) {
     return Entrega(
       id: map['id'],
-      clienteId: int.parse(map['clienteId']),
-      motoristaId: int.parse(map['motoristaId']),
+      clienteId: map['clienteId'],
+      motoristaId: map['motoristaId'],
       endereco: map['endereco'] as String,
       status: StatusEntrega.values.firstWhere(
         (e) => e.toString().split('.').last.toUpperCase() == map['status'],
