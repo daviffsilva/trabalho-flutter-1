@@ -1,10 +1,13 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 enum StatusEntrega {
-  pendente,
-  emAndamento,
-  entregue,
-  cancelada,
+  pendente('Pendente'),
+  emAndamento('Em Andamento'),
+  entregue('Entregue'),
+  cancelada('Cancelada');
+
+  final String label;
+  const StatusEntrega(this.label);
 }
 
 class Entrega {
@@ -12,61 +15,61 @@ class Entrega {
   final int clienteId;
   final int motoristaId;
   final String endereco;
+  final double? latitude;
+  final double? longitude;
   final StatusEntrega status;
   final DateTime dataCriacao;
   final DateTime? dataEntrega;
   final String? fotoEntrega;
   final String? fotoAssinatura;
-  final double? latitude;
-  final double? longitude;
 
   Entrega({
     this.id,
     required this.clienteId,
     required this.motoristaId,
     required this.endereco,
+    this.latitude,
+    this.longitude,
     required this.status,
     required this.dataCriacao,
     this.dataEntrega,
     this.fotoEntrega,
     this.fotoAssinatura,
-    this.latitude,
-    this.longitude,
   });
 
-  factory Entrega.fromMap(Map<String, dynamic> map) {
+  factory Entrega.fromJson(Map<String, dynamic> json) {
     return Entrega(
-      id: map['id'],
-      clienteId: map['clienteId'],
-      motoristaId: map['motoristaId'],
-      endereco: map['endereco'] as String,
+      id: json['id'] as int,
+      clienteId: json['clienteId'] as int,
+      motoristaId: json['motoristaId'] as int,
+      endereco: json['endereco'] as String,
+      latitude: json['latitude'] as double?,
+      longitude: json['longitude'] as double?,
       status: StatusEntrega.values.firstWhere(
-        (e) => e.toString().split('.').last.toUpperCase() == map['status'],
+        (e) => e.toString().split('.').last == json['status'],
       ),
-      dataCriacao: DateTime.parse(map['dataCriacao'] as String),
-      dataEntrega: map['dataEntrega'] != null
-          ? DateTime.parse(map['dataEntrega'] as String)
+      dataCriacao: DateTime.parse(json['dataCriacao'] as String),
+      dataEntrega: json['dataEntrega'] != null
+          ? DateTime.parse(json['dataEntrega'] as String)
           : null,
-      fotoEntrega: map['fotoEntrega'] as String?,
-      fotoAssinatura: map['fotoAssinatura'] as String?,
-      latitude: map['latitude'] as double?,
-      longitude: map['longitude'] as double?,
+      fotoEntrega: json['fotoEntrega'] as String?,
+      fotoAssinatura: json['fotoAssinatura'] as String?,
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'clienteId': clienteId,
       'motoristaId': motoristaId,
       'endereco': endereco,
-      'status': status.toString().split('.').last.toUpperCase(),
+      'latitude': latitude,
+      'longitude': longitude,
+      'status': status.toString().split('.').last,
       'dataCriacao': dataCriacao.toIso8601String(),
       'dataEntrega': dataEntrega?.toIso8601String(),
       'fotoEntrega': fotoEntrega,
       'fotoAssinatura': fotoAssinatura,
-      'latitude': latitude,
-      'longitude': longitude,
     };
   }
 

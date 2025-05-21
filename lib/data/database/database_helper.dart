@@ -1,13 +1,14 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import '../models/entrega.dart';
+import 'package:entrega_app/data/models/entrega.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
-  factory DatabaseHelper() => _instance;
-  DatabaseHelper._internal();
-
   static Database? _database;
+
+  factory DatabaseHelper() => _instance;
+
+  DatabaseHelper._internal();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -16,8 +17,7 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'entregas.db');
+    String path = join(await getDatabasesPath(), 'entregas.db');
     return await openDatabase(
       path,
       version: 1,
@@ -32,13 +32,13 @@ class DatabaseHelper {
         clienteId INTEGER NOT NULL,
         motoristaId INTEGER NOT NULL,
         endereco TEXT NOT NULL,
+        latitude REAL,
+        longitude REAL,
         status TEXT NOT NULL,
         dataCriacao TEXT NOT NULL,
         dataEntrega TEXT,
         fotoEntrega TEXT,
-        fotoAssinatura TEXT,
-        latitude REAL,
-        longitude REAL
+        fotoAssinatura TEXT
       )
     ''');
 
@@ -68,15 +68,29 @@ class DatabaseHelper {
     });
   }
 
+  Future<int> insertEntrega(Entrega entrega) async {
+    final db = await database;
+    return await db.insert('entregas', entrega.toJson());
+  }
+
+  Future<List<Entrega>> getEntregasByCliente(int clienteId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'entregas',
+      where: 'clienteId = ?',
+      whereArgs: [clienteId],
+    );
+    return maps.map((map) => Entrega.fromJson(map)).toList();
+  }
+
   Future<List<Entrega>> getEntregasByMotorista(int motoristaId) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'entregas',
       where: 'motoristaId = ?',
       whereArgs: [motoristaId],
-      orderBy: 'dataCriacao DESC',
     );
-    return maps.map((map) => Entrega.fromMap(map)).toList();
+    return maps.map((map) => Entrega.fromJson(map)).toList();
   }
 
   Future<void> updateEntregaStatus(int id, String fotoEntrega, String fotoAssinatura) async {
@@ -84,7 +98,7 @@ class DatabaseHelper {
     await db.update(
       'entregas',
       {
-        'status': StatusEntrega.entregue.toString().split('.').last.toUpperCase(),
+        'status': StatusEntrega.entregue.toString().split('.').last,
         'dataEntrega': DateTime.now().toIso8601String(),
         'fotoEntrega': fotoEntrega,
         'fotoAssinatura': fotoAssinatura,
