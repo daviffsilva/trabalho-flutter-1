@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:entrega_app/data/services/usuario_service.dart';
 
-class ClienteDrawer extends StatelessWidget {
-  const ClienteDrawer({super.key});
+class MotoristaDrawer extends StatelessWidget {
+  const MotoristaDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {

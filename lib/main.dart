@@ -1,6 +1,7 @@
 import 'package:entrega_app/data/models/usuario.dart';
 import 'package:entrega_app/data/models/entrega.dart';
 import 'package:entrega_app/data/services/usuario_service.dart';
+import 'package:entrega_app/data/services/theme_service.dart';
 import 'package:entrega_app/presentation/screens/cliente/home_page.dart';
 import 'package:entrega_app/presentation/screens/cliente/entregas_page.dart';
 import 'package:entrega_app/presentation/screens/cliente/perfil_page.dart';
@@ -9,15 +10,49 @@ import 'package:entrega_app/presentation/screens/motorista/home_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/entregas_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/perfil_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/entrega_detalhes_page.dart';
+import 'package:entrega_app/presentation/screens/settings_page.dart';
 import 'package:entrega_app/presentation/widgets/cliente_drawer.dart';
+import 'package:entrega_app/presentation/widgets/motorista_drawer.dart';
 import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
+
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  final _themeService = ThemeService();
+  ThemeMode _themeMode = ThemeMode.system;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemeMode();
+    _themeService.themeStream.listen((mode) {
+      setState(() {
+        _themeMode = mode;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _themeService.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadThemeMode() async {
+    final themeMode = await _themeService.getThemeMode();
+    setState(() {
+      _themeMode = themeMode;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +61,19 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
+        brightness: Brightness.light,
       ),
+      darkTheme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        brightness: Brightness.dark,
+      ),
+      themeMode: _themeMode,
       home: const LoginCheck(),
       routes: {
         '/home': (context) => const MainScreen(),
         '/login': (context) => const LoginPage(),
+        '/settings': (context) => const SettingsPage(),
         '/motorista/entrega-detalhes': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Entrega;
           return EntregaDetalhesPage(entrega: args);
@@ -132,6 +175,7 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       body: _pages[_selectedIndex],
+      drawer: _isMotorista ? const MotoristaDrawer() : const ClienteDrawer(),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const [
