@@ -19,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _fazerLogin() async {
     if (_formKey.currentState!.validate()) {
       final usuario = Usuario(
-        id: '1',
+        id: 1,
         nome: _tipoUsuario == TipoUsuario.cliente ? 'Cliente Teste' : 'Motorista Teste',
         email: _emailController.text,
         tipo: _tipoUsuario,
