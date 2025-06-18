@@ -23,11 +23,8 @@ public class OpenApiConfig {
                         .description("Micro-serviço de autenticação e autorização para o sistema de entregas")
                         .version("1.0.0")
                         .contact(new Contact()
-                                .name("Equipe do Sistema de Entregas")
-                                .email("suporte@entregas.com"))
-                        .license(new License()
-                                .name("Licença MIT")
-                                .url("https://opensource.org/licenses/MIT")))
+                                .name("Grupo 06")
+                                .email("davif127@gmail.com")))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
                         .addSecuritySchemes(securitySchemeName,
