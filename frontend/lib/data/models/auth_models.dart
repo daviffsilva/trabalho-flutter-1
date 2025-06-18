@@ -89,6 +89,54 @@ class AuthResponse {
   }
 }
 
+class ErrorResponse {
+  final String error;
+  final String status;
+
+  ErrorResponse({
+    required this.error,
+    required this.status,
+  });
+
+  factory ErrorResponse.fromJson(Map<String, dynamic> json) {
+    return ErrorResponse(
+      error: json['error'] ?? 'Erro desconhecido',
+      status: json['status'] ?? 'error',
+    );
+  }
+}
+
+class ValidationErrorResponse {
+  final String status;
+  final String message;
+  final Map<String, String> fieldErrors;
+
+  ValidationErrorResponse({
+    required this.status,
+    required this.message,
+    required this.fieldErrors,
+  });
+
+  factory ValidationErrorResponse.fromJson(Map<String, dynamic> json) {
+    final fieldErrorsMap = json['fieldErrors'] as Map<String, dynamic>? ?? {};
+    final fieldErrors = Map<String, String>.from(fieldErrorsMap);
+    
+    return ValidationErrorResponse(
+      status: json['status'] ?? 'error',
+      message: json['message'] ?? 'Erro de validação',
+      fieldErrors: fieldErrors,
+    );
+  }
+
+  String getFieldError(String fieldName) {
+    return fieldErrors[fieldName] ?? '';
+  }
+
+  bool hasFieldError(String fieldName) {
+    return fieldErrors.containsKey(fieldName);
+  }
+}
+
 class TokenValidationResponse {
   final bool valid;
   final String? message;

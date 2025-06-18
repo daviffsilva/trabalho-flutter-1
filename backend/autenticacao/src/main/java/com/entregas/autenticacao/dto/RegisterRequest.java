@@ -11,21 +11,21 @@ import jakarta.validation.constraints.Size;
 public class RegisterRequest {
     
     @Schema(description = "Endereço de email do usuário", example = "usuario@exemplo.com", required = true)
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
+    @NotBlank(message = "Email é obrigatório")
+    @Email(message = "Email deve ter um formato válido")
     private String email;
     
     @Schema(description = "Senha do usuário (mínimo 6 caracteres)", example = "senha123", required = true, minLength = 6)
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters long")
+    @NotBlank(message = "Senha é obrigatória")
+    @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres")
     private String password;
     
     @Schema(description = "Nome completo do usuário", example = "João Silva", required = true)
-    @NotBlank(message = "Name is required")
+    @NotBlank(message = "Nome é obrigatório")
     private String name;
     
     @Schema(description = "Tipo de usuário", example = "CLIENT", required = true, allowableValues = {"CLIENT", "DRIVER"})
-    @NotNull(message = "User type is required")
+    @NotNull(message = "Tipo de usuário é obrigatório")
     private UserType userType;
     
     public RegisterRequest() {}

@@ -27,6 +27,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
   bool _obscureConfirmPassword = true;
   UserType _userType = UserType.CLIENT;
   String? _errorMessage;
+  Map<String, String> _fieldErrors = {};
 
   late TabController _tabController;
 
@@ -38,6 +39,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
       setState(() {
         _isLogin = _tabController.index == 0;
         _errorMessage = null;
+        _fieldErrors.clear();
       });
     });
   }
@@ -61,13 +63,14 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _fieldErrors.clear();
     });
 
     try {
-      AuthResponse response;
+      AuthResult result;
       
       if (_isLogin) {
-        response = await _authService.login(
+        result = await _authService.login(
           _emailController.text.trim(),
           _passwordController.text,
         );
@@ -80,7 +83,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
           return;
         }
 
-        response = await _authService.register(
+        result = await _authService.register(
           _emailController.text.trim(),
           _passwordController.text,
           _nameController.text.trim(),
@@ -88,16 +91,19 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
         );
       }
 
-      if (response.isSuccess) {
-        await _usuarioService.salvarUsuarioFromAuth(response);
+      if (result.isSuccess) {
+        await _usuarioService.salvarUsuarioFromAuth(result);
         if (mounted) {
           Navigator.of(context).pushReplacementNamed('/home');
         }
       } else {
         setState(() {
-          _errorMessage = _isLogin 
-              ? 'Email ou senha incorretos'
-              : 'Erro no registro. Verifique os dados e tente novamente.';
+          if (result.validationError != null) {
+            _fieldErrors = result.validationError!.fieldErrors;
+            _errorMessage = result.validationError!.message;
+          } else {
+            _errorMessage = result.errorMessage ?? 'Erro na autenticação';
+          }
         });
       }
     } catch (e) {
@@ -109,6 +115,10 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
         _isLoading = false;
       });
     }
+  }
+
+  String? _getFieldError(String fieldName) {
+    return _fieldErrors[fieldName];
   }
 
   @override
@@ -159,10 +169,11 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
             const SizedBox(height: 32),
             TextFormField(
               controller: _emailController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Email',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.email),
+                errorText: _getFieldError('email'),
               ),
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
@@ -192,6 +203,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                     });
                   },
                 ),
+                errorText: _getFieldError('password'),
               ),
               obscureText: _obscurePassword,
               validator: (value) {
@@ -289,10 +301,11 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
               const SizedBox(height: 24),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Nome completo',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.person),
+                  errorText: _getFieldError('name'),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -307,10 +320,11 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
               const SizedBox(height: 16),
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.email),
+                  errorText: _getFieldError('email'),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
@@ -340,6 +354,7 @@ class _AuthPageState extends State<AuthPage> with SingleTickerProviderStateMixin
                       });
                     },
                   ),
+                  errorText: _getFieldError('password'),
                 ),
                 obscureText: _obscurePassword,
                 validator: (value) {

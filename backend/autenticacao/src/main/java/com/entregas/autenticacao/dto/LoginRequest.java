@@ -8,12 +8,12 @@ import jakarta.validation.constraints.NotBlank;
 public class LoginRequest {
     
     @Schema(description = "Endereço de email do usuário", example = "usuario@exemplo.com", required = true)
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
+    @NotBlank(message = "Email é obrigatório")
+    @Email(message = "Email deve ter um formato válido")
     private String email;
     
     @Schema(description = "Senha do usuário", example = "senha123", required = true)
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "Senha é obrigatória")
     private String password;
     
     public LoginRequest() {}

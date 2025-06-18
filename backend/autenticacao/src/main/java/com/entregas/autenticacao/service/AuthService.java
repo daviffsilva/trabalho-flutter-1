@@ -3,6 +3,7 @@ package com.entregas.autenticacao.service;
 import com.entregas.autenticacao.dto.AuthResponse;
 import com.entregas.autenticacao.dto.LoginRequest;
 import com.entregas.autenticacao.dto.RegisterRequest;
+import com.entregas.autenticacao.exception.AuthenticationException;
 import com.entregas.autenticacao.model.User;
 import com.entregas.autenticacao.repository.UserRepository;
 import com.entregas.autenticacao.util.JwtUtil;
@@ -24,7 +25,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("User with this email already exists");
+            throw AuthenticationException.userAlreadyExists();
         }
 
         User user = new User();
@@ -51,14 +52,14 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(AuthenticationException::invalidCredentials);
 
         if (!user.isActive()) {
-            throw new RuntimeException("User account is deactivated");
+            throw AuthenticationException.userDeactivated();
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw AuthenticationException.invalidCredentials();
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getUserType().name());
@@ -77,17 +78,17 @@ public class AuthService {
 
     public AuthResponse refreshToken(String refreshToken) {
         if (!jwtUtil.validateToken(refreshToken) || !jwtUtil.isRefreshToken(refreshToken)) {
-            throw new RuntimeException("Invalid refresh token");
+            throw AuthenticationException.invalidRefreshToken();
         }
 
         String email = jwtUtil.extractUsername(refreshToken);
         Long userId = jwtUtil.extractUserId(refreshToken);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(AuthenticationException::userNotFound);
 
         if (!user.isActive()) {
-            throw new RuntimeException("User account is deactivated");
+            throw AuthenticationException.userDeactivated();
         }
 
         String newToken = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getUserType().name());
@@ -110,14 +111,14 @@ public class AuthService {
 
     public Long getUserIdFromToken(String token) {
         if (!jwtUtil.validateToken(token)) {
-            throw new RuntimeException("Invalid token");
+            throw AuthenticationException.invalidToken();
         }
         return jwtUtil.extractUserId(token);
     }
 
     public String getUserTypeFromToken(String token) {
         if (!jwtUtil.validateToken(token)) {
-            throw new RuntimeException("Invalid token");
+            throw AuthenticationException.invalidToken();
         }
         return jwtUtil.extractUserType(token);
     }
