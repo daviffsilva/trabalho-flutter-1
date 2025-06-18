@@ -51,7 +51,6 @@ class Usuario {
     }
   }
 
-  // Convert from AuthResponse
   factory Usuario.fromAuthResponse(AuthResponse authResponse) {
     return Usuario(
       id: authResponse.userId ?? 0,
