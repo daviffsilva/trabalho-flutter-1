@@ -21,15 +21,10 @@ public class SecurityConfig {
                     "/api-docs/**", 
                     "/v3/api-docs/**",
                     "/swagger-resources/**",
-                    "/webjars/**",
-                    "/api/auth/health",
-                    "/api/auth/login",
-                    "/api/auth/register"
+                    "/webjars/**"
                 ).permitAll()
-                .anyExchange().authenticated()
-            )
-            .httpBasic(httpBasic -> httpBasic.disable())
-            .formLogin(formLogin -> formLogin.disable());
+                .anyExchange().permitAll()
+            );
         return http.build();
     }
 } 

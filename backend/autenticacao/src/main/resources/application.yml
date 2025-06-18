@@ -29,9 +29,9 @@ jwt:
 # SpringDoc OpenAPI Configuration
 springdoc:
   api-docs:
-    path: /api-docs
+    path: /api/auth/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    path: /api/auth/swagger-ui.html
     operationsSorter: method
     tagsSorter: alpha
   packages-to-scan: com.entregas.autenticacao.controller
