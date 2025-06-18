@@ -5,7 +5,7 @@ import 'package:entrega_app/data/services/theme_service.dart';
 import 'package:entrega_app/presentation/screens/cliente/home_page.dart';
 import 'package:entrega_app/presentation/screens/cliente/entregas_page.dart';
 import 'package:entrega_app/presentation/screens/cliente/perfil_page.dart';
-import 'package:entrega_app/presentation/screens/cliente/login_page.dart';
+import 'package:entrega_app/presentation/screens/auth/auth_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/home_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/entregas_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/perfil_page.dart';
@@ -72,7 +72,7 @@ class _MainAppState extends State<MainApp> {
       home: const LoginCheck(),
       routes: {
         '/home': (context) => const MainScreen(),
-        '/login': (context) => const LoginPage(),
+        '/auth': (context) => const AuthPage(),
         '/settings': (context) => const SettingsPage(),
         '/motorista/entrega-detalhes': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Entrega;
@@ -103,7 +103,7 @@ class LoginCheck extends StatelessWidget {
           return const MainScreen();
         }
 
-        return const LoginPage();
+        return const AuthPage();
       },
     );
   }
@@ -128,7 +128,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _carregarTipoUsuario() async {
-    final usuario = await _usuarioService.obterUsuario();
+    final usuario = await _usuarioService.getCurrentUser();
     if (usuario != null) {
       setState(() {
         _isMotorista = usuario.tipo == TipoUsuario.motorista;
@@ -139,7 +139,7 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _fazerLogout() async {
     await _usuarioService.removerUsuario();
     if (mounted) {
-      Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.of(context).pushReplacementNamed('/auth');
     }
   }
 
