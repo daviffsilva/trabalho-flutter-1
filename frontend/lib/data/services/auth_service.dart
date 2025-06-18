@@ -11,7 +11,7 @@ class AuthService {
 
   final http.Client _client = http.Client();
 
-  Future<AuthResponse> login(String email, String password) async {
+  Future<AuthResult> login(String email, String password) async {
     try {
       final response = await _client.post(
         Uri.parse('$_baseUrl/api/auth/login'),
@@ -29,16 +29,16 @@ class AuthService {
         if (authResponse.token != null) {
           await _saveAuthData(authResponse);
         }
-        return authResponse;
+        return AuthResult.success(authResponse);
       } else {
-        return AuthResponse.error();
+        return _handleErrorResponse(response);
       }
     } catch (e) {
-      return AuthResponse.error();
+      return AuthResult.error('Erro de conexão: ${e.toString()}');
     }
   }
 
-  Future<AuthResponse> register(String email, String password, String name, UserType userType) async {
+  Future<AuthResult> register(String email, String password, String name, UserType userType) async {
     try {
       final response = await _client.post(
         Uri.parse('$_baseUrl/api/auth/register'),
@@ -58,12 +58,12 @@ class AuthService {
         if (authResponse.token != null) {
           await _saveAuthData(authResponse);
         }
-        return authResponse;
+        return AuthResult.success(authResponse);
       } else {
-        return AuthResponse.error();
+        return _handleErrorResponse(response);
       }
     } catch (e) {
-      return AuthResponse.error();
+      return AuthResult.error('Erro de conexão: ${e.toString()}');
     }
   }
 
@@ -92,11 +92,11 @@ class AuthService {
     }
   }
 
-  Future<AuthResponse> refreshToken() async {
+  Future<AuthResult> refreshToken() async {
     try {
       final refreshToken = await _getRefreshToken();
       if (refreshToken == null) {
-        return AuthResponse.error();
+        return AuthResult.error('No refresh token found');
       }
 
       final response = await _client.post(
@@ -112,12 +112,12 @@ class AuthService {
         if (authResponse.token != null) {
           await _saveAuthData(authResponse);
         }
-        return authResponse;
+        return AuthResult.success(authResponse);
       } else {
-        return AuthResponse.error();
+        return _handleErrorResponse(response);
       }
     } catch (e) {
-      return AuthResponse.error();
+      return AuthResult.error('Erro de conexão: ${e.toString()}');
     }
   }
 
@@ -129,6 +129,24 @@ class AuthService {
       return response.statusCode == 200;
     } catch (e) {
       return false;
+    }
+  }
+
+  AuthResult _handleErrorResponse(http.Response response) {
+    try {
+      final responseData = jsonDecode(response.body);
+      
+      if (responseData.containsKey('fieldErrors')) {
+        final validationError = ValidationErrorResponse.fromJson(responseData);
+        return AuthResult.validationError(validationError);
+      } else if (responseData.containsKey('error')) {
+        final errorResponse = ErrorResponse.fromJson(responseData);
+        return AuthResult.error(errorResponse.error);
+      } else {
+        return AuthResult.error('Erro desconhecido do servidor');
+      }
+    } catch (e) {
+      return AuthResult.error('Erro ao processar resposta do servidor');
     }
   }
 
@@ -178,7 +196,7 @@ class AuthService {
     final validation = await validateToken();
     if (!validation.valid) {
       final refreshResult = await refreshToken();
-      return refreshResult.token != null;
+      return refreshResult.isSuccess;
     }
     return true;
   }
@@ -205,5 +223,48 @@ class AuthService {
 
   void dispose() {
     _client.close();
+  }
+}
+
+class AuthResult {
+  final bool isSuccess;
+  final AuthResponse? authResponse;
+  final String? errorMessage;
+  final ValidationErrorResponse? validationError;
+
+  AuthResult._({
+    required this.isSuccess,
+    this.authResponse,
+    this.errorMessage,
+    this.validationError,
+  });
+
+  factory AuthResult.success(AuthResponse authResponse) {
+    return AuthResult._(
+      isSuccess: true,
+      authResponse: authResponse,
+    );
+  }
+
+  factory AuthResult.error(String message) {
+    return AuthResult._(
+      isSuccess: false,
+      errorMessage: message,
+    );
+  }
+
+  factory AuthResult.validationError(ValidationErrorResponse validationError) {
+    return AuthResult._(
+      isSuccess: false,
+      validationError: validationError,
+    );
+  }
+
+  String? getFieldError(String fieldName) {
+    return validationError?.getFieldError(fieldName);
+  }
+
+  bool hasFieldError(String fieldName) {
+    return validationError?.hasFieldError(fieldName) ?? false;
   }
 } 

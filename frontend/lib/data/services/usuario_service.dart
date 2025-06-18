@@ -36,9 +36,9 @@ class UsuarioService {
     return await _authService.isAuthenticated();
   }
 
-  Future<void> salvarUsuarioFromAuth(AuthResponse authResponse) async {
-    if (authResponse.isSuccess && authResponse.userId != null) {
-      final usuario = Usuario.fromAuthResponse(authResponse);
+  Future<void> salvarUsuarioFromAuth(AuthResult authResult) async {
+    if (authResult.isSuccess && authResult.authResponse?.userId != null) {
+      final usuario = Usuario.fromAuthResponse(authResult.authResponse!);
       await salvarUsuario(usuario);
     }
   }
