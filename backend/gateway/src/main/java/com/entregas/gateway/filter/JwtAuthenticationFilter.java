@@ -28,7 +28,10 @@ public class JwtAuthenticationFilter implements WebFilter {
             path.startsWith("/api-docs") || 
             path.startsWith("/v3/api-docs") ||
             path.startsWith("/swagger-resources") ||
-            path.startsWith("/webjars")) {
+            path.startsWith("/webjars") ||
+            path.startsWith("/api/auth/health") ||
+            path.startsWith("/api/auth/login") ||
+            path.startsWith("/api/auth/register")) {
             return chain.filter(exchange);
         }
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
