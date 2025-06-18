@@ -1,106 +1,87 @@
-package com.entregas.pedidos.model;
+package com.entregas.pedidos.dto;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "orders")
-public class Order {
+import com.entregas.pedidos.model.PedidoStatus;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Objeto de resposta de pedido")
+public class PedidoResponse {
+
+    @Schema(description = "ID do pedido", example = "1")
     private Long id;
 
-    @NotBlank
-    @Column(name = "origin_address")
+    @Schema(description = "Endereço de origem", example = "Rua das Flores, 123 - São Paulo, SP")
     private String originAddress;
 
-    @NotBlank
-    @Column(name = "destination_address")
+    @Schema(description = "Endereço de destino", example = "Av. Paulista, 1000 - São Paulo, SP")
     private String destinationAddress;
 
-    @NotNull
-    @Column(name = "origin_latitude")
+    @Schema(description = "Latitude da origem", example = "-23.5505")
     private Double originLatitude;
 
-    @NotNull
-    @Column(name = "origin_longitude")
+    @Schema(description = "Longitude da origem", example = "-46.6333")
     private Double originLongitude;
 
-    @NotNull
-    @Column(name = "destination_latitude")
+    @Schema(description = "Latitude do destino", example = "-23.5631")
     private Double destinationLatitude;
 
-    @NotNull
-    @Column(name = "destination_longitude")
+    @Schema(description = "Longitude do destino", example = "-46.6544")
     private Double destinationLongitude;
 
-    @NotBlank
-    @Column(name = "customer_name")
+    @Schema(description = "Nome do cliente", example = "João Silva")
     private String customerName;
 
-    @NotBlank
-    @Column(name = "customer_email")
+    @Schema(description = "Email do cliente", example = "joao@exemplo.com")
     private String customerEmail;
 
-    @Column(name = "customer_phone")
+    @Schema(description = "Telefone do cliente", example = "(11) 99999-9999")
     private String customerPhone;
 
-    @NotBlank
-    @Column(name = "cargo_type")
+    @Schema(description = "Tipo de carga", example = "Eletrônicos")
     private String cargoType;
 
-    @Column(name = "cargo_weight")
+    @Schema(description = "Peso da carga em kg", example = "5.5")
     private Double cargoWeight;
 
-    @Column(name = "cargo_dimensions")
+    @Schema(description = "Dimensões da carga", example = "30x20x15 cm")
     private String cargoDimensions;
 
-    @Column(name = "special_instructions")
+    @Schema(description = "Instruções especiais", example = "Fragil, manuseio com cuidado")
     private String specialInstructions;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private OrderStatus status;
+    @Schema(description = "Status do pedido", example = "PENDING")
+    private PedidoStatus status;
 
-    @Column(name = "driver_id")
+    @Schema(description = "ID do motorista", example = "123")
     private Long driverId;
 
-    @Column(name = "estimated_distance")
+    @Schema(description = "Distância estimada em km", example = "15.5")
     private Double estimatedDistance;
 
-    @Column(name = "estimated_duration")
+    @Schema(description = "Duração estimada em minutos", example = "45")
     private Integer estimatedDuration;
 
-    @Column(name = "total_price")
+    @Schema(description = "Preço total", example = "75.50")
     private Double totalPrice;
 
-    @Column(name = "created_at")
+    @Schema(description = "Data de criação")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Schema(description = "Data de atualização")
     private LocalDateTime updatedAt;
 
-    @Column(name = "delivered_at")
+    @Schema(description = "Data de entrega")
     private LocalDateTime deliveredAt;
 
-    @Column(name = "delivery_photo_url")
+    @Schema(description = "URL da foto da entrega")
     private String deliveryPhotoUrl;
 
-    @Column(name = "delivery_signature")
+    @Schema(description = "Assinatura da entrega")
     private String deliverySignature;
 
-    public Order() {
-        this.status = OrderStatus.PENDING;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    public PedidoResponse() {
     }
 
     public Long getId() {
@@ -215,11 +196,11 @@ public class Order {
         this.specialInstructions = specialInstructions;
     }
 
-    public OrderStatus getStatus() {
+    public PedidoStatus getStatus() {
         return status;
     }
 
-    public void setStatus(OrderStatus status) {
+    public void setStatus(PedidoStatus status) {
         this.status = status;
     }
 
@@ -294,4 +275,4 @@ public class Order {
     public void setDeliverySignature(String deliverySignature) {
         this.deliverySignature = deliverySignature;
     }
-} 
+}

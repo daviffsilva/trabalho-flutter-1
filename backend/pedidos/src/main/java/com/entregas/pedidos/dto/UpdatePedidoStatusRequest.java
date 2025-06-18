@@ -1,15 +1,16 @@
 package com.entregas.pedidos.dto;
 
-import com.entregas.pedidos.model.OrderStatus;
+import com.entregas.pedidos.model.PedidoStatus;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "Objeto de requisição para atualização de status do pedido")
-public class UpdateOrderStatusRequest {
+public class UpdatePedidoStatusRequest {
 
     @Schema(description = "Novo status do pedido", example = "IN_TRANSIT", required = true)
     @NotNull(message = "Status é obrigatório")
-    private OrderStatus status;
+    private PedidoStatus status;
 
     @Schema(description = "ID do motorista (opcional)")
     private Long driverId;
@@ -20,13 +21,14 @@ public class UpdateOrderStatusRequest {
     @Schema(description = "Assinatura da entrega (opcional)")
     private String deliverySignature;
 
-    public UpdateOrderStatusRequest() {}
+    public UpdatePedidoStatusRequest() {
+    }
 
-    public OrderStatus getStatus() {
+    public PedidoStatus getStatus() {
         return status;
     }
 
-    public void setStatus(OrderStatus status) {
+    public void setStatus(PedidoStatus status) {
         this.status = status;
     }
 
@@ -53,4 +55,4 @@ public class UpdateOrderStatusRequest {
     public void setDeliverySignature(String deliverySignature) {
         this.deliverySignature = deliverySignature;
     }
-} 
+}

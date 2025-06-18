@@ -1,6 +1,6 @@
 package com.entregas.pedidos.model;
 
-public enum OrderStatus {
+public enum PedidoStatus {
     PENDING("Pendente"),
     ACCEPTED("Aceito"),
     IN_TRANSIT("Em trânsito"),
@@ -11,11 +11,11 @@ public enum OrderStatus {
 
     private final String description;
 
-    OrderStatus(String description) {
+    PedidoStatus(String description) {
         this.description = description;
     }
 
     public String getDescription() {
         return description;
     }
-} 
+}

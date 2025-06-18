@@ -1,13 +1,13 @@
 package com.entregas.pedidos.service;
 
-import com.entregas.pedidos.dto.CreateOrderRequest;
-import com.entregas.pedidos.dto.OrderResponse;
+import com.entregas.pedidos.dto.CreatepedidoRequest;
+import com.entregas.pedidos.dto.pedidoResponse;
 import com.entregas.pedidos.dto.RouteResponse;
-import com.entregas.pedidos.dto.UpdateOrderStatusRequest;
-import com.entregas.pedidos.exception.OrderException;
-import com.entregas.pedidos.model.Order;
-import com.entregas.pedidos.model.OrderStatus;
-import com.entregas.pedidos.repository.OrderRepository;
+import com.entregas.pedidos.dto.UpdatepedidoStatusRequest;
+import com.entregas.pedidos.exception.pedidoException;
+import com.entregas.pedidos.model.pedido;
+import com.entregas.pedidos.model.pedidoStatus;
+import com.entregas.pedidos.repository.pedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,146 +16,146 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class OrderService {
+public class pedidoService {
 
     @Autowired
-    private OrderRepository orderRepository;
+    private pedidoRepository pedidoRepository;
 
     @Autowired
     private RouteService routeService;
 
-    public OrderResponse createOrder(CreateOrderRequest request) {
-        Order order = new Order();
-        order.setOriginAddress(request.getOriginAddress());
-        order.setDestinationAddress(request.getDestinationAddress());
-        order.setOriginLatitude(request.getOriginLatitude());
-        order.setOriginLongitude(request.getOriginLongitude());
-        order.setDestinationLatitude(request.getDestinationLatitude());
-        order.setDestinationLongitude(request.getDestinationLongitude());
-        order.setCustomerName(request.getCustomerName());
-        order.setCustomerEmail(request.getCustomerEmail());
-        order.setCustomerPhone(request.getCustomerPhone());
-        order.setCargoType(request.getCargoType());
-        order.setCargoWeight(request.getCargoWeight());
-        order.setCargoDimensions(request.getCargoDimensions());
-        order.setSpecialInstructions(request.getSpecialInstructions());
-        order.setStatus(OrderStatus.PENDING);
+    public pedidoResponse createpedido(CreatepedidoRequest request) {
+        pedido pedido = new pedido();
+        pedido.setOriginAddress(request.getOriginAddress());
+        pedido.setDestinationAddress(request.getDestinationAddress());
+        pedido.setOriginLatitude(request.getOriginLatitude());
+        pedido.setOriginLongitude(request.getOriginLongitude());
+        pedido.setDestinationLatitude(request.getDestinationLatitude());
+        pedido.setDestinationLongitude(request.getDestinationLongitude());
+        pedido.setCustomerName(request.getCustomerName());
+        pedido.setCustomerEmail(request.getCustomerEmail());
+        pedido.setCustomerPhone(request.getCustomerPhone());
+        pedido.setCargoType(request.getCargoType());
+        pedido.setCargoWeight(request.getCargoWeight());
+        pedido.setCargoDimensions(request.getCargoDimensions());
+        pedido.setSpecialInstructions(request.getSpecialInstructions());
+        pedido.setStatus(pedidoStatus.PENDING);
 
         RouteResponse route = routeService.calculateRoute(
                 request.getOriginLatitude(), request.getOriginLongitude(),
                 request.getDestinationLatitude(), request.getDestinationLongitude()
         );
 
-        order.setEstimatedDistance(route.getDistance());
-        order.setEstimatedDuration(route.getDuration());
-        order.setTotalPrice(calculatePrice(route.getDistance(), request.getCargoWeight()));
+        pedido.setEstimatedDistance(route.getDistance());
+        pedido.setEstimatedDuration(route.getDuration());
+        pedido.setTotalPrice(calculatePrice(route.getDistance(), request.getCargoWeight()));
 
-        Order savedOrder = orderRepository.save(order);
-        return convertToResponse(savedOrder);
+        pedido savedpedido = pedidoRepository.save(pedido);
+        return convertToResponse(savedpedido);
     }
 
-    public OrderResponse getOrderById(Long id) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> OrderException.orderNotFound());
-        return convertToResponse(order);
+    public pedidoResponse getpedidoById(Long id) {
+        pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> pedidoException.pedidoNotFound());
+        return convertToResponse(pedido);
     }
 
-    public List<OrderResponse> getOrdersByCustomerEmail(String email) {
-        List<Order> orders = orderRepository.findOrdersByCustomerEmailOrderByCreatedAtDesc(email);
-        return orders.stream()
+    public List<pedidoResponse> getpedidosByCustomerEmail(String email) {
+        List<pedido> pedidos = pedidoRepository.findpedidosByCustomerEmailpedidoByCreatedAtDesc(email);
+        return pedidos.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
-    public List<OrderResponse> getOrdersByDriverId(Long driverId) {
-        List<Order> orders = orderRepository.findOrdersByDriverIdOrderByUpdatedAtDesc(driverId);
-        return orders.stream()
+    public List<pedidoResponse> getpedidosByDriverId(Long driverId) {
+        List<pedido> pedidos = pedidoRepository.findpedidosByDriverIdpedidoByUpdatedAtDesc(driverId);
+        return pedidos.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
-    public List<OrderResponse> getAvailableOrders() {
-        List<Order> orders = orderRepository.findAvailableOrders(OrderStatus.PENDING);
-        return orders.stream()
+    public List<pedidoResponse> getAvailablepedidos() {
+        List<pedido> pedidos = pedidoRepository.findAvailablepedidos(pedidoStatus.PENDING);
+        return pedidos.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
-    public List<OrderResponse> getOrdersByStatus(OrderStatus status) {
-        List<Order> orders = orderRepository.findByStatus(status);
-        return orders.stream()
+    public List<pedidoResponse> getpedidosByStatus(pedidoStatus status) {
+        List<pedido> pedidos = pedidoRepository.findByStatus(status);
+        return pedidos.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
-    public OrderResponse updateOrderStatus(Long orderId, UpdateOrderStatusRequest request) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> OrderException.orderNotFound());
+    public pedidoResponse updatepedidoStatus(Long pedidoId, UpdatepedidoStatusRequest request) {
+        pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> pedidoException.pedidoNotFound());
 
-        order.setStatus(request.getStatus());
+        pedido.setStatus(request.getStatus());
 
         if (request.getDriverId() != null) {
-            order.setDriverId(request.getDriverId());
+            pedido.setDriverId(request.getDriverId());
         }
 
         if (request.getDeliveryPhotoUrl() != null) {
-            order.setDeliveryPhotoUrl(request.getDeliveryPhotoUrl());
+            pedido.setDeliveryPhotoUrl(request.getDeliveryPhotoUrl());
         }
 
         if (request.getDeliverySignature() != null) {
-            order.setDeliverySignature(request.getDeliverySignature());
+            pedido.setDeliverySignature(request.getDeliverySignature());
         }
 
-        if (request.getStatus() == OrderStatus.DELIVERED) {
-            order.setDeliveredAt(LocalDateTime.now());
+        if (request.getStatus() == pedidoStatus.DELIVERED) {
+            pedido.setDeliveredAt(LocalDateTime.now());
         }
 
-        Order updatedOrder = orderRepository.save(order);
-        return convertToResponse(updatedOrder);
+        pedido updatedpedido = pedidoRepository.save(pedido);
+        return convertToResponse(updatedpedido);
     }
 
-    public void deleteOrder(Long id) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> OrderException.orderNotFound());
+    public void deletepedido(Long id) {
+        pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> pedidoException.pedidoNotFound());
 
-        if (order.getStatus() != OrderStatus.PENDING) {
-            throw OrderException.cannotDeleteOrder();
+        if (pedido.getStatus() != pedidoStatus.PENDING) {
+            throw pedidoException.cannotDeletepedido();
         }
 
-        orderRepository.delete(order);
+        pedidoRepository.delete(pedido);
     }
 
-    public RouteResponse calculateRoute(Double originLat, Double originLng, 
+    public RouteResponse calculateRoute(Double originLat, Double originLng,
                                       Double destLat, Double destLng) {
         return routeService.calculateRoute(originLat, originLng, destLat, destLng);
     }
 
-    private OrderResponse convertToResponse(Order order) {
-        OrderResponse response = new OrderResponse();
-        response.setId(order.getId());
-        response.setOriginAddress(order.getOriginAddress());
-        response.setDestinationAddress(order.getDestinationAddress());
-        response.setOriginLatitude(order.getOriginLatitude());
-        response.setOriginLongitude(order.getOriginLongitude());
-        response.setDestinationLatitude(order.getDestinationLatitude());
-        response.setDestinationLongitude(order.getDestinationLongitude());
-        response.setCustomerName(order.getCustomerName());
-        response.setCustomerEmail(order.getCustomerEmail());
-        response.setCustomerPhone(order.getCustomerPhone());
-        response.setCargoType(order.getCargoType());
-        response.setCargoWeight(order.getCargoWeight());
-        response.setCargoDimensions(order.getCargoDimensions());
-        response.setSpecialInstructions(order.getSpecialInstructions());
-        response.setStatus(order.getStatus());
-        response.setDriverId(order.getDriverId());
-        response.setEstimatedDistance(order.getEstimatedDistance());
-        response.setEstimatedDuration(order.getEstimatedDuration());
-        response.setTotalPrice(order.getTotalPrice());
-        response.setCreatedAt(order.getCreatedAt());
-        response.setUpdatedAt(order.getUpdatedAt());
-        response.setDeliveredAt(order.getDeliveredAt());
-        response.setDeliveryPhotoUrl(order.getDeliveryPhotoUrl());
-        response.setDeliverySignature(order.getDeliverySignature());
+    private pedidoResponse convertToResponse(pedido pedido) {
+        pedidoResponse response = new pedidoResponse();
+        response.setId(pedido.getId());
+        response.setOriginAddress(pedido.getOriginAddress());
+        response.setDestinationAddress(pedido.getDestinationAddress());
+        response.setOriginLatitude(pedido.getOriginLatitude());
+        response.setOriginLongitude(pedido.getOriginLongitude());
+        response.setDestinationLatitude(pedido.getDestinationLatitude());
+        response.setDestinationLongitude(pedido.getDestinationLongitude());
+        response.setCustomerName(pedido.getCustomerName());
+        response.setCustomerEmail(pedido.getCustomerEmail());
+        response.setCustomerPhone(pedido.getCustomerPhone());
+        response.setCargoType(pedido.getCargoType());
+        response.setCargoWeight(pedido.getCargoWeight());
+        response.setCargoDimensions(pedido.getCargoDimensions());
+        response.setSpecialInstructions(pedido.getSpecialInstructions());
+        response.setStatus(pedido.getStatus());
+        response.setDriverId(pedido.getDriverId());
+        response.setEstimatedDistance(pedido.getEstimatedDistance());
+        response.setEstimatedDuration(pedido.getEstimatedDuration());
+        response.setTotalPrice(pedido.getTotalPrice());
+        response.setCreatedAt(pedido.getCreatedAt());
+        response.setUpdatedAt(pedido.getUpdatedAt());
+        response.setDeliveredAt(pedido.getDeliveredAt());
+        response.setDeliveryPhotoUrl(pedido.getDeliveryPhotoUrl());
+        response.setDeliverySignature(pedido.getDeliverySignature());
         return response;
     }
 
@@ -165,4 +165,4 @@ public class OrderService {
         double weightPrice = (weight != null) ? weight * 1.5 : 0.0;
         return basePrice + distancePrice + weightPrice;
     }
-} 
+}
