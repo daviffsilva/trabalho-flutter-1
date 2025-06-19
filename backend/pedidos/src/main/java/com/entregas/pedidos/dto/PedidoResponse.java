@@ -31,13 +31,13 @@ public class PedidoResponse {
     private Double destinationLongitude;
 
     @Schema(description = "Nome do cliente", example = "João Silva")
-    private String customerName;
+    private String clienteNome;
 
     @Schema(description = "Email do cliente", example = "joao@exemplo.com")
-    private String customerEmail;
+    private String clienteEmail;
 
     @Schema(description = "Telefone do cliente", example = "(11) 99999-9999")
-    private String customerPhone;
+    private String clienteTelefone;
 
     @Schema(description = "Tipo de carga", example = "Eletrônicos")
     private String cargoType;
@@ -55,7 +55,7 @@ public class PedidoResponse {
     private PedidoStatus status;
 
     @Schema(description = "ID do motorista", example = "123")
-    private Long driverId;
+    private Long motoristaId;
 
     @Schema(description = "Distância estimada em km", example = "15.5")
     private Double estimatedDistance;
@@ -140,28 +140,28 @@ public class PedidoResponse {
         this.destinationLongitude = destinationLongitude;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public String getClienteNome() {
+        return clienteNome;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
+    public void setClienteNome(String clienteNome) {
+        this.clienteNome = clienteNome;
     }
 
-    public String getCustomerEmail() {
-        return customerEmail;
+    public String getClienteEmail() {
+        return clienteEmail;
     }
 
-    public void setCustomerEmail(String customerEmail) {
-        this.customerEmail = customerEmail;
+    public void setClienteEmail(String clienteEmail) {
+        this.clienteEmail = clienteEmail;
     }
 
-    public String getCustomerPhone() {
-        return customerPhone;
+    public String getClienteTelefone() {
+        return clienteTelefone;
     }
 
-    public void setCustomerPhone(String customerPhone) {
-        this.customerPhone = customerPhone;
+    public void setClienteTelefone(String clienteTelefone) {
+        this.clienteTelefone = clienteTelefone;
     }
 
     public String getCargoType() {
@@ -204,12 +204,12 @@ public class PedidoResponse {
         this.status = status;
     }
 
-    public Long getDriverId() {
-        return driverId;
+    public Long getMotoristaId() {
+        return motoristaId;
     }
 
-    public void setDriverId(Long driverId) {
-        this.driverId = driverId;
+    public void setMotoristaId(Long motoristaId) {
+        this.motoristaId = motoristaId;
     }
 
     public Double getEstimatedDistance() {

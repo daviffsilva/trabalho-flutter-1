@@ -12,13 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.entregas.pedidos.dto.CreateOrderRequest;
+import com.entregas.pedidos.dto.CreatePedidoRequest;
 import com.entregas.pedidos.dto.ErrorResponse;
 import com.entregas.pedidos.dto.PedidoResponse;
-import com.entregas.pedidos.dto.RouteResponse;
 import com.entregas.pedidos.dto.UpdatePedidoStatusRequest;
 import com.entregas.pedidos.model.PedidoStatus;
 import com.entregas.pedidos.service.PedidoService;
@@ -40,15 +38,14 @@ public class PedidoController {
     @Autowired
     private PedidoService pedidoService;
 
-    @Operation(summary = "Criar novo pedido", description = "Cria um novo pedido com informações de origem, destino e carga")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Pedido criado com sucesso",
-                content = @Content(schema = @Schema(implementation = PedidoResponse.class))),
-        @ApiResponse(responseCode = "400", description = "Dados inválidos",
-                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
     @PostMapping
-    public ResponseEntity<PedidoResponse> createPedido(@Valid @RequestBody CreateOrderRequest request) {
+    @Operation(summary = "Criar pedido", description = "Cria um novo pedido")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Pedido criado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
+    })
+    public ResponseEntity<PedidoResponse> createPedido(@Valid @RequestBody CreatePedidoRequest request) {
         PedidoResponse response = pedidoService.createPedido(request);
         return ResponseEntity.ok(response);
     }
@@ -71,9 +68,9 @@ public class PedidoController {
         @ApiResponse(responseCode = "200", description = "Pedidos encontrados",
                 content = @Content(schema = @Schema(implementation = PedidoResponse.class)))
     })
-    @GetMapping("/customer/{email}")
-    public ResponseEntity<List<PedidoResponse>> getPedidosByCustomer(@PathVariable String email) {
-        List<PedidoResponse> responses = pedidoService.getPedidosByCustomerEmail(email);
+    @GetMapping("/cliente/{email}")
+    public ResponseEntity<List<PedidoResponse>> getPedidosByCliente(@PathVariable String email) {
+        List<PedidoResponse> responses = pedidoService.getPedidosByClienteEmail(email);
         return ResponseEntity.ok(responses);
     }
 
@@ -82,9 +79,9 @@ public class PedidoController {
         @ApiResponse(responseCode = "200", description = "Pedidos encontrados",
                 content = @Content(schema = @Schema(implementation = PedidoResponse.class)))
     })
-    @GetMapping("/driver/{driverId}")
-    public ResponseEntity<List<PedidoResponse>> getPedidosByDriver(@PathVariable Long driverId) {
-        List<PedidoResponse> responses = pedidoService.getPedidosByDriverId(driverId);
+    @GetMapping("/motorista/{motoristaId}")
+    public ResponseEntity<List<PedidoResponse>> getPedidosByMotorista(@PathVariable Long motoristaId) {
+        List<PedidoResponse> responses = pedidoService.getPedidosByMotoristaId(motoristaId);
         return ResponseEntity.ok(responses);
     }
 
@@ -122,21 +119,6 @@ public class PedidoController {
             @PathVariable Long id,
             @Valid @RequestBody UpdatePedidoStatusRequest request) {
         PedidoResponse response = pedidoService.updatePedidoStatus(id, request);
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(summary = "Calcular rota", description = "Calcula a rota otimizada entre dois pontos")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Rota calculada com sucesso",
-                content = @Content(schema = @Schema(implementation = RouteResponse.class)))
-    })
-    @GetMapping("/route")
-    public ResponseEntity<RouteResponse> calculateRoute(
-            @RequestParam Double originLat,
-            @RequestParam Double originLng,
-            @RequestParam Double destLat,
-            @RequestParam Double destLng) {
-        RouteResponse response = pedidoService.calculateRoute(originLat, originLng, destLat, destLng);
         return ResponseEntity.ok(response);
     }
 
