@@ -1,0 +1,42 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: pedidos-service
+  
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:pedidos_db}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:daviffsilva}
+    password: ${DB_PASSWORD:1234}
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  
+  security:
+    user:
+      name: admin
+      password: admin
+
+# SpringDoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api/pedidos/api-docs
+  swagger-ui:
+    path: /api/pedidos/swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  packages-to-scan: com.entregas.pedidos.controller
+
+# Logging
+logging:
+  level:
+    com.entregas: DEBUG
+    org.springframework.security: DEBUG 
