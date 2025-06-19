@@ -1,20 +1,15 @@
 server:
-  port: 8082
+  port: 8084
 
 spring:
   application:
     name: pedidos-service
   
   datasource:
-    url: jdbc:h2:mem:pedidosdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: password
-  
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:pedidos_db}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:daviffsilva}
+    password: ${DB_PASSWORD:1234}
   
   jpa:
     hibernate:
@@ -22,22 +17,26 @@ spring:
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   
   security:
     user:
       name: admin
       password: admin
 
-logging:
-  level:
-    com.entregas.pedidos: DEBUG
-    org.springframework.security: DEBUG
-
+# SpringDoc OpenAPI Configuration
 springdoc:
   api-docs:
-    path: /api-docs
+    path: /api/pedidos/api-docs
   swagger-ui:
-    path: /swagger-ui.html
-    operations-sorter: method 
+    path: /api/pedidos/swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  packages-to-scan: com.entregas.pedidos.controller
+
+# Logging
+logging:
+  level:
+    com.entregas: DEBUG
+    org.springframework.security: DEBUG 
