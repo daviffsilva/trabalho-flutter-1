@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "Objeto de requisição para criação de pedido")
-public class CreateOrderRequest {
+public class CreatePedidoRequest {
 
     @Schema(description = "Endereço de origem", example = "Rua das Flores, 123 - São Paulo, SP", required = true)
     @NotBlank(message = "Endereço de origem é obrigatório")
@@ -34,15 +34,15 @@ public class CreateOrderRequest {
 
     @Schema(description = "Nome do cliente", example = "João Silva", required = true)
     @NotBlank(message = "Nome do cliente é obrigatório")
-    private String customerName;
+    private String clienteNome;
 
     @Schema(description = "Email do cliente", example = "joao@exemplo.com", required = true)
     @NotBlank(message = "Email do cliente é obrigatório")
     @Email(message = "Email deve ter um formato válido")
-    private String customerEmail;
+    private String clienteEmail;
 
     @Schema(description = "Telefone do cliente", example = "(11) 99999-9999")
-    private String customerPhone;
+    private String clienteTelefone;
 
     @Schema(description = "Tipo de carga", example = "Eletrônicos", required = true)
     @NotBlank(message = "Tipo de carga é obrigatório")
@@ -57,7 +57,7 @@ public class CreateOrderRequest {
     @Schema(description = "Instruções especiais", example = "Fragil, manuseio com cuidado")
     private String specialInstructions;
 
-    public CreateOrderRequest() {}
+    public CreatePedidoRequest() {}
 
     public String getOriginAddress() {
         return originAddress;
@@ -107,28 +107,28 @@ public class CreateOrderRequest {
         this.destinationLongitude = destinationLongitude;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public String getClienteNome() {
+        return clienteNome;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
+    public void setClienteNome(String clienteNome) {
+        this.clienteNome = clienteNome;
     }
 
-    public String getCustomerEmail() {
-        return customerEmail;
+    public String getClienteEmail() {
+        return clienteEmail;
     }
 
-    public void setCustomerEmail(String customerEmail) {
-        this.customerEmail = customerEmail;
+    public void setClienteEmail(String clienteEmail) {
+        this.clienteEmail = clienteEmail;
     }
 
-    public String getCustomerPhone() {
-        return customerPhone;
+    public String getClienteTelefone() {
+        return clienteTelefone;
     }
 
-    public void setCustomerPhone(String customerPhone) {
-        this.customerPhone = customerPhone;
+    public void setClienteTelefone(String clienteTelefone) {
+        this.clienteTelefone = clienteTelefone;
     }
 
     public String getCargoType() {
