@@ -178,6 +178,27 @@ class PedidoService {
     }
   }
 
+  Future<Pedido> claimPedido(int id, ClaimPedidoRequest request) async {
+    try {
+      final headers = await _authService.getAuthHeaders();
+      final response = await _client.put(
+        Uri.parse('$_baseUrl/api/pedidos/$id/claim'),
+        headers: headers,
+        body: jsonEncode(request.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        return Pedido.fromJson(json);
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? 'Failed to claim pedido');
+      }
+    } catch (e) {
+      throw Exception('Error claiming pedido: $e');
+    }
+  }
+
   Future<void> deletePedido(int id) async {
     try {
       final headers = await _authService.getAuthHeaders();

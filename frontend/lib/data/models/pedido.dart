@@ -225,4 +225,18 @@ class UpdatePedidoStatusRequest {
       if (deliverySignature != null) 'deliverySignature': deliverySignature,
     };
   }
+}
+
+class ClaimPedidoRequest {
+  final int motoristaId;
+
+  ClaimPedidoRequest({
+    required this.motoristaId,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'motoristaId': motoristaId,
+    };
+  }
 } 
