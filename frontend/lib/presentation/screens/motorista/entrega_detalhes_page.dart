@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:entrega_app/data/models/pedido.dart';
 import 'package:entrega_app/data/services/pedido_service.dart';
+import 'package:entrega_app/data/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:camera/camera.dart';
@@ -23,6 +24,7 @@ class EntregaDetalhesPage extends StatefulWidget {
 
 class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
   final _pedidoService = PedidoService();
+  final _authService = AuthService();
   late GoogleMapController _mapController;
   final Completer<GoogleMapController> _controller = Completer();
   CameraController? _cameraController;
@@ -47,6 +49,7 @@ class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
   void dispose() {
     _cameraController?.dispose();
     _pedidoService.dispose();
+    _authService.dispose();
     super.dispose();
   }
 
@@ -145,13 +148,31 @@ class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
     setState(() => _isLoading = true);
 
     try {
-      final request = UpdatePedidoStatusRequest(
-        status: novoStatus,
-        deliveryPhotoUrl: _fotoEntrega,
-        deliverySignature: _fotoAssinatura,
-      );
+      if (novoStatus == StatusPedido.ACCEPTED && widget.pedido.canBeAccepted) {
+        final userData = await _authService.getUserData();
+        if (userData == null) {
+          throw Exception('Usuário não autenticado');
+        }
 
-      await _pedidoService.updatePedidoStatus(widget.pedido.id!, request);
+        final motoristaId = userData['userId'];
+        if (motoristaId == null) {
+          throw Exception('ID do motorista não encontrado');
+        }
+
+        final request = ClaimPedidoRequest(
+          motoristaId: motoristaId,
+        );
+
+        await _pedidoService.claimPedido(widget.pedido.id!, request);
+      } else {
+        final request = UpdatePedidoStatusRequest(
+          status: novoStatus,
+          deliveryPhotoUrl: _fotoEntrega,
+          deliverySignature: _fotoAssinatura,
+        );
+
+        await _pedidoService.updatePedidoStatus(widget.pedido.id!, request);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -213,7 +234,7 @@ class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
                       snippet: widget.pedido.originAddress,
                     ),
                   ),
-                  Marker(
+                        Marker(
                     markerId: const MarkerId('destino'),
                     position: widget.pedido.destinationLocation,
                     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
@@ -221,7 +242,7 @@ class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
                       title: 'Destino',
                       snippet: widget.pedido.destinationAddress,
                     ),
-                  ),
+                        ),
                 },
                 myLocationEnabled: true,
                 myLocationButtonEnabled: true,
@@ -274,7 +295,7 @@ class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
                   backgroundColor: _getStatusColor(widget.pedido.status),
                 ),
               ],
-            ),
+                  ),
             const SizedBox(height: 12),
             _buildInfoRow('Origem:', widget.pedido.originAddress),
             _buildInfoRow('Destino:', widget.pedido.destinationAddress),
@@ -309,7 +330,7 @@ class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.grey,
-              ),
+                  ),
             ),
           ),
           Expanded(
@@ -337,7 +358,7 @@ class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
             ),
           ),
         if (widget.pedido.canBeStarted) ...[
-          const SizedBox(height: 8),
+                    const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
@@ -353,7 +374,7 @@ class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
         ],
         if (widget.pedido.canBeDelivered) ...[
           const SizedBox(height: 8),
-          SizedBox(
+                      SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: _isLoading ? null : () => _atualizarStatus(StatusPedido.OUT_FOR_DELIVERY),
@@ -364,10 +385,10 @@ class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
                 foregroundColor: Colors.white,
               ),
             ),
-          ),
+                      ),
         ],
         if (widget.pedido.status == StatusPedido.OUT_FOR_DELIVERY) ...[
-          const SizedBox(height: 16),
+                    const SizedBox(height: 16),
           const Text(
             'Fotos da Entrega',
             style: TextStyle(
@@ -377,26 +398,26 @@ class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
           ),
           const SizedBox(height: 8),
           Row(
-            children: [
+                      children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _tirarFoto('entrega'),
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('Foto da Entrega'),
-                ),
+                          onPressed: () => _tirarFoto('entrega'),
+                          icon: const Icon(Icons.camera_alt),
+                          label: const Text('Foto da Entrega'),
+                        ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _tirarFoto('assinatura'),
+                          onPressed: () => _tirarFoto('assinatura'),
                   icon: const Icon(Icons.edit),
-                  label: const Text('Assinatura'),
+                          label: const Text('Assinatura'),
                 ),
-              ),
-            ],
-          ),
+                        ),
+                      ],
+                    ),
           if (_fotoEntrega != null || _fotoAssinatura != null) ...[
-            const SizedBox(height: 16),
+                      const SizedBox(height: 16),
             Row(
               children: [
                 if (_fotoEntrega != null)
@@ -405,39 +426,39 @@ class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
                       children: [
                         const Text('Foto da Entrega:'),
                         const SizedBox(height: 8),
-                        Image.file(
-                          File(_fotoEntrega!),
+                      Image.file(
+                        File(_fotoEntrega!),
                           height: 100,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ],
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ],
                     ),
                   ),
-                if (_fotoAssinatura != null) ...[
+                    if (_fotoAssinatura != null) ...[
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       children: [
                         const Text('Assinatura:'),
                         const SizedBox(height: 8),
-                        Image.file(
-                          File(_fotoAssinatura!),
+                      Image.file(
+                        File(_fotoAssinatura!),
                           height: 100,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ],
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ],
                     ),
                   ),
                 ],
               ],
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: _isFinalizing ? null : _finalizarEntrega,
+                        onPressed: _isFinalizing ? null : _finalizarEntrega,
                 icon: _isFinalizing
                     ? const SizedBox(
                         width: 20,
@@ -451,10 +472,10 @@ class _EntregaDetalhesPageState extends State<EntregaDetalhesPage> {
                   foregroundColor: Colors.white,
                 ),
               ),
-            ),
-          ],
-        ],
-      ],
+                      ),
+                    ],
+                  ],
+                ],
     );
   }
 

@@ -1,5 +1,6 @@
 package com.entregas.pedidos.service;
 
+import com.entregas.pedidos.dto.ClaimPedidoRequest;
 import com.entregas.pedidos.dto.CreatePedidoRequest;
 import com.entregas.pedidos.dto.PedidoResponse;
 import com.entregas.pedidos.dto.UpdatePedidoStatusRequest;
@@ -129,6 +130,42 @@ public class PedidoService {
         return pedidos.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+    }
+
+    public PedidoResponse claimPedido(Long pedidoId, Long motoristaId) {
+        Optional<Pedido> pedidoOpt = pedidoRepository.findById(pedidoId);
+        if (pedidoOpt.isEmpty()) {
+            throw new PedidoException("Pedido não encontrado com ID: " + pedidoId);
+        }
+
+        Pedido pedido = pedidoOpt.get();
+        
+        // Check if pedido is available for claiming
+        if (pedido.getStatus() != PedidoStatus.PENDING) {
+            throw new PedidoException("Pedido não está disponível para reivindicação. Status atual: " + pedido.getStatus());
+        }
+        
+        if (pedido.getMotoristaId() != null) {
+            throw new PedidoException("Pedido já foi atribuído a um motorista");
+        }
+
+        // Assign the motorista to the pedido and update status
+        pedido.setMotoristaId(motoristaId);
+        pedido.setStatus(PedidoStatus.ACCEPTED);
+        pedido.setUpdatedAt(LocalDateTime.now());
+
+        Pedido savedPedido = pedidoRepository.save(pedido);
+        return convertToResponse(savedPedido);
+    }
+
+    public boolean isPedidoAvailableForClaiming(Long pedidoId) {
+        Optional<Pedido> pedidoOpt = pedidoRepository.findById(pedidoId);
+        if (pedidoOpt.isEmpty()) {
+            return false;
+        }
+
+        Pedido pedido = pedidoOpt.get();
+        return pedido.getStatus() == PedidoStatus.PENDING && pedido.getMotoristaId() == null;
     }
 
     private PedidoResponse convertToResponse(Pedido pedido) {

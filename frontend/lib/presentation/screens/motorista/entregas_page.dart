@@ -40,10 +40,10 @@ class _MotoristaEntregasPageState extends State<MotoristaEntregasPage> {
 
     try {
       final pedidos = await _pedidoService.getPedidosForCurrentUser();
-      setState(() {
+        setState(() {
         _pedidos = pedidos;
-        _isLoading = false;
-      });
+          _isLoading = false;
+        });
     } catch (e) {
       setState(() {
         _errorMessage = 'Erro ao carregar pedidos: $e';
@@ -114,28 +114,28 @@ class _MotoristaEntregasPageState extends State<MotoristaEntregasPage> {
       ),
       body: RefreshIndicator(
         onRefresh: _carregarPedidos,
-        child: ListView.builder(
+      child: ListView.builder(
           itemCount: _pedidos.length,
-          itemBuilder: (context, index) {
+        itemBuilder: (context, index) {
             final pedido = _pedidos[index];
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ListTile(
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: ListTile(
                 title: Text(
                   pedido.destinationAddress,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
                       'Cliente: ${pedido.clienteNome}',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(
                       'Carga: ${pedido.cargoType}',
-                    ),
+                  ),
                     if (pedido.cargoWeight != null)
                       Text('Peso: ${pedido.cargoWeight} kg'),
                     Text(
@@ -150,33 +150,33 @@ class _MotoristaEntregasPageState extends State<MotoristaEntregasPage> {
                           fontWeight: FontWeight.bold,
                           color: Colors.green,
                         ),
-                      ),
-                  ],
-                ),
+                    ),
+                ],
+              ),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Chip(
-                      label: Text(
+                label: Text(
                         pedido.status.label,
                         style: const TextStyle(color: Colors.white, fontSize: 12),
-                      ),
+                ),
                       backgroundColor: _getStatusColor(pedido.status),
                     ),
                     if (pedido.status == StatusPedido.OUT_FOR_DELIVERY)
                       const Icon(Icons.local_shipping, color: Colors.orange),
                   ],
-                ),
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/motorista/entrega-detalhes',
-                    arguments: pedido,
-                  );
-                },
               ),
-            );
-          },
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  '/motorista/entrega-detalhes',
+                    arguments: pedido,
+                );
+              },
+            ),
+          );
+        },
         ),
       ),
     );

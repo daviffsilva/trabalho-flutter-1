@@ -1,6 +1,7 @@
 package com.entregas.pedidos.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import com.entregas.pedidos.dto.CreatePedidoRequest;
 import com.entregas.pedidos.dto.ErrorResponse;
 import com.entregas.pedidos.dto.PedidoResponse;
 import com.entregas.pedidos.dto.UpdatePedidoStatusRequest;
+import com.entregas.pedidos.dto.ClaimPedidoRequest;
 import com.entregas.pedidos.model.PedidoStatus;
 import com.entregas.pedidos.service.PedidoService;
 
@@ -130,6 +132,34 @@ public class PedidoController {
             @PathVariable Long id,
             @Valid @RequestBody UpdatePedidoStatusRequest request) {
         PedidoResponse response = pedidoService.updatePedidoStatus(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Verificar se pedido está disponível para reivindicação", description = "Verifica se um pedido pode ser reivindicado por um motorista")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Verificação realizada com sucesso")
+    })
+    @GetMapping("/{id}/available")
+    public ResponseEntity<Map<String, Boolean>> isPedidoAvailableForClaiming(@PathVariable Long id) {
+        boolean isAvailable = pedidoService.isPedidoAvailableForClaiming(id);
+        Map<String, Boolean> response = Map.of("available", isAvailable);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Motorista reivindicar pedido", description = "Permite que um motorista reivindique um pedido disponível")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pedido reivindicado com sucesso",
+                content = @Content(schema = @Schema(implementation = PedidoResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Pedido não disponível ou já atribuído",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Pedido não encontrado",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PutMapping("/{id}/claim")
+    public ResponseEntity<PedidoResponse> claimPedido(
+            @PathVariable Long id,
+            @Valid @RequestBody ClaimPedidoRequest request) {
+        PedidoResponse response = pedidoService.claimPedido(id, request.getMotoristaId());
         return ResponseEntity.ok(response);
     }
 

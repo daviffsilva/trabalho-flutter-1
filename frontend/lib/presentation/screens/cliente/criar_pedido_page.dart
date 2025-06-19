@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../data/models/pedido.dart';
 import '../../../data/services/pedido_service.dart';
 import '../../../data/services/auth_service.dart';
+import '../../widgets/address_search_field.dart';
 
 class CriarPedidoPage extends StatefulWidget {
   const CriarPedidoPage({super.key});
@@ -25,10 +27,8 @@ class _CriarPedidoPageState extends State<CriarPedidoPage> {
   final _cargoDimensionsController = TextEditingController();
   final _specialInstructionsController = TextEditingController();
   
-  double _originLatitude = 0.0;
-  double _originLongitude = 0.0;
-  double _destinationLatitude = 0.0;
-  double _destinationLongitude = 0.0;
+  LatLng? _originCoordinates;
+  LatLng? _destinationCoordinates;
 
   @override
   void dispose() {
@@ -41,8 +41,27 @@ class _CriarPedidoPageState extends State<CriarPedidoPage> {
     super.dispose();
   }
 
+  void _onOriginAddressSelected(String address, LatLng coordinates) {
+    setState(() {
+      _originCoordinates = coordinates;
+    });
+  }
+
+  void _onDestinationAddressSelected(String address, LatLng coordinates) {
+    setState(() {
+      _destinationCoordinates = coordinates;
+    });
+  }
+
   Future<void> _createPedido() async {
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (_originCoordinates == null || _destinationCoordinates == null) {
+      setState(() {
+        _errorMessage = 'Por favor, selecione endereços válidos da lista de sugestões';
+      });
       return;
     }
 
@@ -60,10 +79,10 @@ class _CriarPedidoPageState extends State<CriarPedidoPage> {
       final request = CreatePedidoRequest(
         originAddress: _originAddressController.text,
         destinationAddress: _destinationAddressController.text,
-        originLatitude: _originLatitude,
-        originLongitude: _originLongitude,
-        destinationLatitude: _destinationLatitude,
-        destinationLongitude: _destinationLongitude,
+        originLatitude: _originCoordinates!.latitude,
+        originLongitude: _originCoordinates!.longitude,
+        destinationLatitude: _destinationCoordinates!.latitude,
+        destinationLongitude: _destinationCoordinates!.longitude,
         clienteId: userData['userId'],
         clienteNome: userData['name'],
         clienteEmail: userData['email'],
@@ -78,13 +97,13 @@ class _CriarPedidoPageState extends State<CriarPedidoPage> {
             ? _specialInstructionsController.text 
             : null,
       );
-
-      await _pedidoService.createPedido(request);
+      
+      final createdPedido = await _pedidoService.createPedido(request);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pedido criado com sucesso!'),
+          SnackBar(
+            content: Text('Pedido criado com sucesso! ID: ${createdPedido.id}'),
             backgroundColor: Colors.green,
           ),
         );
@@ -92,7 +111,7 @@ class _CriarPedidoPageState extends State<CriarPedidoPage> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString();
+        _errorMessage = 'Erro ao criar pedido: $e';
       });
     } finally {
       if (mounted) {
@@ -149,35 +168,66 @@ class _CriarPedidoPageState extends State<CriarPedidoPage> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            TextFormField(
+                            AddressSearchField(
                               controller: _originAddressController,
-                              decoration: const InputDecoration(
-                                labelText: 'Endereço de Origem *',
-                                border: OutlineInputBorder(),
-                                prefixIcon: Icon(Icons.location_on, color: Colors.red),
-                              ),
+                              label: 'Endereço de Origem *',
+                              hint: 'Digite para buscar endereços...',
+                              prefixIcon: Icons.location_on,
+                              prefixIconColor: Colors.red,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Por favor, insira o endereço de origem';
                                 }
+                                if (_originCoordinates == null) {
+                                  return 'Por favor, selecione um endereço da lista';
+                                }
                                 return null;
                               },
+                              onAddressSelected: _onOriginAddressSelected,
                             ),
                             const SizedBox(height: 16),
-                            TextFormField(
+                            AddressSearchField(
                               controller: _destinationAddressController,
-                              decoration: const InputDecoration(
-                                labelText: 'Endereço de Destino *',
-                                border: OutlineInputBorder(),
-                                prefixIcon: Icon(Icons.location_on, color: Colors.green),
-                              ),
+                              label: 'Endereço de Destino *',
+                              hint: 'Digite para buscar endereços...',
+                              prefixIcon: Icons.location_on,
+                              prefixIconColor: Colors.green,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Por favor, insira o endereço de destino';
                                 }
+                                if (_destinationCoordinates == null) {
+                                  return 'Por favor, selecione um endereço da lista';
+                                }
                                 return null;
                               },
+                              onAddressSelected: _onDestinationAddressSelected,
                             ),
+                            const SizedBox(height: 16),
+                            if (_originCoordinates != null && _destinationCoordinates != null)
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.shade50,
+                                  border: Border.all(color: Colors.green.shade200),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.check_circle, color: Colors.green.shade700),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Endereços válidos selecionados',
+                                        style: TextStyle(
+                                          color: Colors.green.shade700,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
                       ),

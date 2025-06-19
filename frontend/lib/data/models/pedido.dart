@@ -158,7 +158,7 @@ class CreatePedidoRequest {
   final double originLongitude;
   final double destinationLatitude;
   final double destinationLongitude;
-  final int? clienteId;
+  final int clienteId;
   final String clienteNome;
   final String clienteEmail;
   final String? clienteTelefone;
@@ -174,7 +174,7 @@ class CreatePedidoRequest {
     required this.originLongitude,
     required this.destinationLatitude,
     required this.destinationLongitude,
-    this.clienteId,
+    required this.clienteId,
     required this.clienteNome,
     required this.clienteEmail,
     this.clienteTelefone,
@@ -223,6 +223,20 @@ class UpdatePedidoStatusRequest {
       if (driverId != null) 'driverId': driverId,
       if (deliveryPhotoUrl != null) 'deliveryPhotoUrl': deliveryPhotoUrl,
       if (deliverySignature != null) 'deliverySignature': deliverySignature,
+    };
+  }
+}
+
+class ClaimPedidoRequest {
+  final int motoristaId;
+
+  ClaimPedidoRequest({
+    required this.motoristaId,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'motoristaId': motoristaId,
     };
   }
 } 
