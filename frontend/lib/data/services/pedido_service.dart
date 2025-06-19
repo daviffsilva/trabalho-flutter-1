@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/pedido.dart';
 import 'auth_service.dart';
+import '../../config/api_config.dart';
 
 class PedidoService {
-  static const String _baseUrl = 'http://localhost:8084';
+  static const String _baseUrl = ApiConfig.pedidosBaseUrl;
   final AuthService _authService = AuthService();
   final http.Client _client = http.Client();
 
@@ -127,20 +128,31 @@ class PedidoService {
   Future<Pedido> createPedido(CreatePedidoRequest request) async {
     try {
       final headers = await _authService.getAuthHeaders();
+      final requestBody = jsonEncode(request.toJson());
+      
       final response = await _client.post(
         Uri.parse('$_baseUrl/api/pedidos'),
         headers: headers,
-        body: jsonEncode(request.toJson()),
+        body: requestBody,
       );
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final json = jsonDecode(response.body);
         return Pedido.fromJson(json);
       } else {
-        final errorData = jsonDecode(response.body);
-        throw Exception(errorData['error'] ?? 'Failed to create pedido');
+        String errorMessage = 'Failed to create pedido (Status: ${response.statusCode})';
+        try {
+          final errorData = jsonDecode(response.body);
+          errorMessage = errorData['error'] ?? errorData['message'] ?? errorMessage;
+        } catch (e) {
+          errorMessage += ' - Response: ${response.body}';
+        }
+        throw Exception(errorMessage);
       }
     } catch (e) {
+      if (e is FormatException) {
+        throw Exception('Error parsing response from server: $e');
+      }
       throw Exception('Error creating pedido: $e');
     }
   }
