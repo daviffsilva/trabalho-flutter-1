@@ -14,11 +14,15 @@ import com.entregas.pedidos.model.PedidoStatus;
 @Repository
 public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
+    List<Pedido> findByClienteId(Long clienteId);
+
     List<Pedido> findByClienteEmail(String clienteEmail);
 
     List<Pedido> findByStatus(PedidoStatus status);
 
     List<Pedido> findByMotoristaId(Long motoristaId);
+
+    List<Pedido> findByClienteIdAndStatus(Long clienteId, PedidoStatus status);
 
     List<Pedido> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 

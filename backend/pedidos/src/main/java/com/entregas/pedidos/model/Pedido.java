@@ -13,6 +13,10 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    @Column(name = "cliente_id")
+    private Long clienteId;
+
     @NotBlank
     @Column(name = "origin_address")
     private String originAddress;
@@ -109,6 +113,14 @@ public class Pedido {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getClienteId() {
+        return clienteId;
+    }
+
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
     }
 
     public String getOriginAddress() {

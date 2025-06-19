@@ -74,6 +74,17 @@ public class PedidoController {
         return ResponseEntity.ok(responses);
     }
 
+    @Operation(summary = "Buscar pedidos por ID do cliente", description = "Retorna todos os pedidos de um cliente específico por ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pedidos encontrados",
+                content = @Content(schema = @Schema(implementation = PedidoResponse.class)))
+    })
+    @GetMapping("/cliente/id/{clienteId}")
+    public ResponseEntity<List<PedidoResponse>> getPedidosByClienteId(@PathVariable Long clienteId) {
+        List<PedidoResponse> responses = pedidoService.getPedidosByClienteId(clienteId);
+        return ResponseEntity.ok(responses);
+    }
+
     @Operation(summary = "Buscar pedidos por motorista", description = "Retorna todos os pedidos atribuídos a um motorista")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pedidos encontrados",

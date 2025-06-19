@@ -29,6 +29,7 @@ public class PedidoService {
         pedido.setOriginLongitude(request.getOriginLongitude());
         pedido.setDestinationLatitude(request.getDestinationLatitude());
         pedido.setDestinationLongitude(request.getDestinationLongitude());
+        pedido.setClienteId(request.getClienteId());
         pedido.setClienteNome(request.getClienteNome());
         pedido.setClienteEmail(request.getClienteEmail());
         pedido.setClienteTelefone(request.getClienteTelefone());
@@ -60,8 +61,10 @@ public class PedidoService {
     }
 
     public List<PedidoResponse> getPedidosByClienteId(Long clienteId) {
-        // Since the model uses customerEmail instead of clienteId, we'll return empty for now
-        return List.of();
+        List<Pedido> pedidos = pedidoRepository.findByClienteId(clienteId);
+        return pedidos.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
     }
 
     public List<PedidoResponse> getPedidosByClienteEmail(String email) {
@@ -115,8 +118,10 @@ public class PedidoService {
     }
 
     public List<PedidoResponse> getPedidosByClienteAndStatus(Long clienteId, PedidoStatus status) {
-        // Since the model uses customerEmail instead of clienteId, we'll return empty for now
-        return List.of();
+        List<Pedido> pedidos = pedidoRepository.findByClienteIdAndStatus(clienteId, status);
+        return pedidos.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
     }
 
     public List<PedidoResponse> getAvailablePedidos() {
@@ -129,6 +134,7 @@ public class PedidoService {
     private PedidoResponse convertToResponse(Pedido pedido) {
         PedidoResponse response = new PedidoResponse();
         response.setId(pedido.getId());
+        response.setClienteId(pedido.getClienteId());
         response.setOriginAddress(pedido.getOriginAddress());
         response.setDestinationAddress(pedido.getDestinationAddress());
         response.setOriginLatitude(pedido.getOriginLatitude());
