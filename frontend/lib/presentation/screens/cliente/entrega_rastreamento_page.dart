@@ -3,17 +3,17 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:entrega_app/data/models/entrega.dart';
+import 'package:entrega_app/data/models/pedido.dart';
 import 'package:entrega_app/data/models/rastreamento.dart';
 import 'package:entrega_app/data/services/rastreamento_service.dart';
 import 'package:intl/intl.dart';
 
 class EntregaRastreamentoPage extends StatefulWidget {
-  final Entrega entrega;
+  final Pedido pedido;
 
   const EntregaRastreamentoPage({
     super.key,
-    required this.entrega,
+    required this.pedido,
   });
 
   @override
@@ -67,7 +67,7 @@ class _EntregaRastreamentoPageState extends State<EntregaRastreamentoPage> {
   Future<void> _carregarRastreamento() async {
     setState(() => _isLoading = true);
     
-    final rastreamento = await _rastreamentoService.getUltimoRastreamento(widget.entrega.id!);
+    final rastreamento = await _rastreamentoService.getUltimoRastreamento(widget.pedido.id!);
     
     if (mounted) {
       setState(() {
@@ -79,7 +79,7 @@ class _EntregaRastreamentoPageState extends State<EntregaRastreamentoPage> {
       });
     }
 
-    _rastreamentoService.rastreamentoStream(widget.entrega.id!).listen((rastreamento) {
+    _rastreamentoService.rastreamentoStream(widget.pedido.id!).listen((rastreamento) {
       if (mounted) {
         setState(() {
           _ultimoRastreamento = rastreamento;
@@ -104,14 +104,20 @@ class _EntregaRastreamentoPageState extends State<EntregaRastreamentoPage> {
       ),
       Marker(
         markerId: const MarkerId('destino'),
-        position: LatLng(
-          widget.entrega.latitude ?? 0.0,
-          widget.entrega.longitude ?? 0.0,
-        ),
+        position: widget.pedido.destinationLocation,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        infoWindow: const InfoWindow(
+        infoWindow: InfoWindow(
           title: 'Destino',
-          snippet: 'Local de entrega',
+          snippet: widget.pedido.destinationAddress,
+        ),
+      ),
+      Marker(
+        markerId: const MarkerId('origem'),
+        position: widget.pedido.originLocation,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        infoWindow: InfoWindow(
+          title: 'Origem',
+          snippet: widget.pedido.originAddress,
         ),
       ),
     };
@@ -142,9 +148,24 @@ class _EntregaRastreamentoPageState extends State<EntregaRastreamentoPage> {
           title: const Text('Rastreamento'),
         ),
         body: Center(
-          child: Text(
-            'Nenhuma informação de rastreamento disponível',
-            style: theme.textTheme.bodyLarge,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.location_off, size: 64, color: Colors.grey.shade400),
+              const SizedBox(height: 16),
+              Text(
+                'Nenhuma informação de rastreamento disponível',
+                style: theme.textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Status do pedido: ${widget.pedido.status.label}',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -198,19 +219,18 @@ class _EntregaRastreamentoPageState extends State<EntregaRastreamentoPage> {
                 const SizedBox(height: 8),
                 Text(
                   'Última atualização: ${DateFormat('dd/MM/yyyy HH:mm').format(_ultimoRastreamento!.dataAtualizacao)}',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
                   ),
                 ),
-                if (_ultimoRastreamento!.observacao != null) ...[
-                  const SizedBox(height: 8),
+                const SizedBox(height: 8),
+                if (_ultimoRastreamento!.observacao != null && _ultimoRastreamento!.observacao!.isNotEmpty)
                   Text(
-                    _ultimoRastreamento!.observacao!,
+                    'Observação: ${_ultimoRastreamento!.observacao}',
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
-                ],
               ],
             ),
           ),

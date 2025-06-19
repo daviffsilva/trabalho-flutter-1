@@ -30,6 +30,7 @@ public class DataLoader implements CommandLineRunner {
         pedido1.setOriginLongitude(-46.6333);
         pedido1.setDestinationLatitude(-23.5631);
         pedido1.setDestinationLongitude(-46.6544);
+        pedido1.setClienteId(1L);
         pedido1.setClienteNome("João Silva");
         pedido1.setClienteEmail("joao@exemplo.com");
         pedido1.setClienteTelefone("(11) 99999-9999");
@@ -52,6 +53,7 @@ public class DataLoader implements CommandLineRunner {
         pedido2.setOriginLongitude(-46.6388);
         pedido2.setDestinationLatitude(-23.5617);
         pedido2.setDestinationLongitude(-46.6684);
+        pedido2.setClienteId(2L);
         pedido2.setClienteNome("Maria Santos");
         pedido2.setClienteEmail("maria@exemplo.com");
         pedido2.setClienteTelefone("(11) 88888-8888");
@@ -75,6 +77,7 @@ public class DataLoader implements CommandLineRunner {
         pedido3.setOriginLongitude(-46.6914);
         pedido3.setDestinationLatitude(-23.5687);
         pedido3.setDestinationLongitude(-46.6692);
+        pedido3.setClienteId(3L);
         pedido3.setClienteNome("Pedro Costa");
         pedido3.setClienteEmail("pedro@exemplo.com");
         pedido3.setClienteTelefone("(11) 77777-7777");

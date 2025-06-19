@@ -32,6 +32,10 @@ public class CreatePedidoRequest {
     @NotNull(message = "Longitude do destino é obrigatória")
     private Double destinationLongitude;
 
+    @Schema(description = "ID do cliente", example = "1", required = true)
+    @NotNull(message = "ID do cliente é obrigatório")
+    private Long clienteId;
+
     @Schema(description = "Nome do cliente", example = "João Silva", required = true)
     @NotBlank(message = "Nome do cliente é obrigatório")
     private String clienteNome;
@@ -105,6 +109,14 @@ public class CreatePedidoRequest {
 
     public void setDestinationLongitude(Double destinationLongitude) {
         this.destinationLongitude = destinationLongitude;
+    }
+
+    public Long getClienteId() {
+        return clienteId;
+    }
+
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
     }
 
     public String getClienteNome() {

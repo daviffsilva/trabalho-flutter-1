@@ -30,6 +30,9 @@ public class PedidoResponse {
     @Schema(description = "Longitude do destino", example = "-46.6544")
     private Double destinationLongitude;
 
+    @Schema(description = "ID do cliente", example = "1")
+    private Long clienteId;
+
     @Schema(description = "Nome do cliente", example = "João Silva")
     private String clienteNome;
 
@@ -138,6 +141,14 @@ public class PedidoResponse {
 
     public void setDestinationLongitude(Double destinationLongitude) {
         this.destinationLongitude = destinationLongitude;
+    }
+
+    public Long getClienteId() {
+        return clienteId;
+    }
+
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
     }
 
     public String getClienteNome() {

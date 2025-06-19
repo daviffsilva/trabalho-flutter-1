@@ -15,7 +15,7 @@ class MotoristaDrawer extends StatelessWidget {
               color: Colors.blue,
             ),
             child: Text(
-              'Menu',
+              'Menu Motorista',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
@@ -32,10 +32,18 @@ class MotoristaDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.delivery_dining),
-            title: const Text('Entregas'),
+            title: const Text('Meus Pedidos'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/entregas');
+              Navigator.pushReplacementNamed(context, '/home');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.add_shopping_cart),
+            title: const Text('Pedidos Disponíveis'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/motorista/pedidos-disponiveis');
             },
           ),
           ListTile(
@@ -43,7 +51,7 @@ class MotoristaDrawer extends StatelessWidget {
             title: const Text('Perfil'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/perfil');
+              Navigator.pushReplacementNamed(context, '/home');
             },
           ),
           const Divider(),
@@ -61,7 +69,7 @@ class MotoristaDrawer extends StatelessWidget {
             onTap: () async {
               await UsuarioService().removerUsuario();
               if (context.mounted) {
-                Navigator.pushReplacementNamed(context, '/login');
+                Navigator.pushReplacementNamed(context, '/auth');
               }
             },
           ),
