@@ -36,6 +36,8 @@
 	<string>Este aplicativo precisa acessar o microfone para gravar vídeos das entregas.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Este aplicativo precisa acessar a galeria para salvar fotos das entregas.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Este aplicativo precisa acessar a rede local para conectar com o servidor de rastreamento em tempo real.</string>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

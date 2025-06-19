@@ -16,6 +16,7 @@ import 'package:entrega_app/presentation/screens/motorista/pedidos_disponiveis_p
 import 'package:entrega_app/presentation/screens/settings_page.dart';
 import 'package:entrega_app/presentation/widgets/cliente_drawer.dart';
 import 'package:entrega_app/presentation/widgets/motorista_drawer.dart';
+import 'package:entrega_app/presentation/pages/live_tracking_demo_page.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -77,6 +78,7 @@ class _MainAppState extends State<MainApp> {
         '/home': (context) => const MainScreen(),
         '/auth': (context) => const AuthPage(),
         '/settings': (context) => const SettingsPage(),
+        '/live-tracking-demo': (context) => const LiveTrackingDemoPage(),
         '/criar-pedido': (context) => const CriarPedidoPage(),
         '/motorista/entrega-detalhes': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Pedido;
@@ -183,6 +185,13 @@ class _MainScreenState extends State<MainScreen> {
         backgroundColor: Colors.blue,
         title: Text(_isMotorista ? 'App de Entregas - Motorista' : 'App de Entregas - Cliente'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.location_on),
+            tooltip: 'Rastreamento em Tempo Real',
+            onPressed: () {
+              Navigator.pushNamed(context, '/live-tracking-demo');
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: _fazerLogout,
