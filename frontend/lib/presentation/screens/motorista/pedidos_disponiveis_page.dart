@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:entrega_app/data/models/pedido.dart';
 import 'package:entrega_app/data/services/pedido_service.dart';
-import 'package:entrega_app/data/services/usuario_service.dart';
 import 'package:entrega_app/presentation/screens/motorista/entrega_detalhes_page.dart';
 import 'package:intl/intl.dart';
 
-class MotoristaEntregasPage extends StatefulWidget {
-  const MotoristaEntregasPage({super.key});
+class PedidosDisponiveisPage extends StatefulWidget {
+  const PedidosDisponiveisPage({super.key});
 
   @override
-  State<MotoristaEntregasPage> createState() => _MotoristaEntregasPageState();
+  State<PedidosDisponiveisPage> createState() => _PedidosDisponiveisPageState();
 }
 
-class _MotoristaEntregasPageState extends State<MotoristaEntregasPage> {
+class _PedidosDisponiveisPageState extends State<PedidosDisponiveisPage> {
   final _pedidoService = PedidoService();
-  final _usuarioService = UsuarioService();
   List<Pedido> _pedidos = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -22,31 +20,30 @@ class _MotoristaEntregasPageState extends State<MotoristaEntregasPage> {
   @override
   void initState() {
     super.initState();
-    _carregarPedidos();
+    _carregarPedidosDisponiveis();
   }
 
   @override
   void dispose() {
     _pedidoService.dispose();
-    _usuarioService.dispose();
     super.dispose();
   }
 
-  Future<void> _carregarPedidos() async {
+  Future<void> _carregarPedidosDisponiveis() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final pedidos = await _pedidoService.getPedidosForCurrentUser();
+      final pedidos = await _pedidoService.getAvailablePedidos();
       setState(() {
         _pedidos = pedidos;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Erro ao carregar pedidos: $e';
+        _errorMessage = 'Erro ao carregar pedidos disponíveis: $e';
         _isLoading = false;
       });
     }
@@ -75,7 +72,7 @@ class _MotoristaEntregasPageState extends State<MotoristaEntregasPage> {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: _carregarPedidos,
+                onPressed: _carregarPedidosDisponiveis,
                 child: const Text('Tentar novamente'),
               ),
             ],
@@ -93,8 +90,14 @@ class _MotoristaEntregasPageState extends State<MotoristaEntregasPage> {
               Icon(Icons.inbox, size: 64, color: Colors.grey),
               SizedBox(height: 16),
               Text(
-                'Nenhum pedido encontrado',
+                'Nenhum pedido disponível no momento',
                 style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Novos pedidos aparecerão aqui quando estiverem disponíveis',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -104,16 +107,16 @@ class _MotoristaEntregasPageState extends State<MotoristaEntregasPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Meus Pedidos'),
+        title: const Text('Pedidos Disponíveis'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _carregarPedidos,
+            onPressed: _carregarPedidosDisponiveis,
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: _carregarPedidos,
+        onRefresh: _carregarPedidosDisponiveis,
         child: ListView.builder(
           itemCount: _pedidos.length,
           itemBuilder: (context, index) {
@@ -157,23 +160,24 @@ class _MotoristaEntregasPageState extends State<MotoristaEntregasPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Chip(
-                      label: Text(
-                        pedido.status.label,
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                      label: const Text(
+                        'DISPONÍVEL',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
                       ),
-                      backgroundColor: _getStatusColor(pedido.status),
+                      backgroundColor: Colors.green,
                     ),
-                    if (pedido.status == StatusPedido.OUT_FOR_DELIVERY)
-                      const Icon(Icons.local_shipping, color: Colors.orange),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () => _verDetalhes(pedido),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(80, 32),
+                      ),
+                      child: const Text('Ver'),
+                    ),
                   ],
                 ),
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/motorista/entrega-detalhes',
-                    arguments: pedido,
-                  );
-                },
               ),
             );
           },
@@ -182,20 +186,16 @@ class _MotoristaEntregasPageState extends State<MotoristaEntregasPage> {
     );
   }
 
-  Color _getStatusColor(StatusPedido status) {
-    switch (status) {
-      case StatusPedido.DELIVERED:
-        return Colors.green;
-      case StatusPedido.IN_TRANSIT:
-      case StatusPedido.OUT_FOR_DELIVERY:
-        return Colors.orange;
-      case StatusPedido.ACCEPTED:
-        return Colors.blue;
-      case StatusPedido.PENDING:
-        return Colors.grey;
-      case StatusPedido.CANCELLED:
-      case StatusPedido.FAILED:
-        return Colors.red;
-    }
+  void _verDetalhes(Pedido pedido) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EntregaDetalhesPage(pedido: pedido),
+      ),
+    ).then((result) {
+      if (result == true) {
+        _carregarPedidosDisponiveis();
+      }
+    });
   }
 } 

@@ -1,15 +1,18 @@
 import 'package:entrega_app/data/models/usuario.dart';
-import 'package:entrega_app/data/models/entrega.dart';
+import 'package:entrega_app/data/models/pedido.dart';
 import 'package:entrega_app/data/services/usuario_service.dart';
 import 'package:entrega_app/data/services/theme_service.dart';
 import 'package:entrega_app/presentation/screens/cliente/home_page.dart';
 import 'package:entrega_app/presentation/screens/cliente/entregas_page.dart';
 import 'package:entrega_app/presentation/screens/cliente/perfil_page.dart';
+import 'package:entrega_app/presentation/screens/cliente/criar_pedido_page.dart';
+import 'package:entrega_app/presentation/screens/cliente/pedido_detalhes_page.dart';
 import 'package:entrega_app/presentation/screens/auth/auth_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/home_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/entregas_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/perfil_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/entrega_detalhes_page.dart';
+import 'package:entrega_app/presentation/screens/motorista/pedidos_disponiveis_page.dart';
 import 'package:entrega_app/presentation/screens/settings_page.dart';
 import 'package:entrega_app/presentation/widgets/cliente_drawer.dart';
 import 'package:entrega_app/presentation/widgets/motorista_drawer.dart';
@@ -74,9 +77,15 @@ class _MainAppState extends State<MainApp> {
         '/home': (context) => const MainScreen(),
         '/auth': (context) => const AuthPage(),
         '/settings': (context) => const SettingsPage(),
+        '/criar-pedido': (context) => const CriarPedidoPage(),
         '/motorista/entrega-detalhes': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments as Entrega;
-          return EntregaDetalhesPage(entrega: args);
+          final args = ModalRoute.of(context)!.settings.arguments as Pedido;
+          return EntregaDetalhesPage(pedido: args);
+        },
+        '/motorista/pedidos-disponiveis': (context) => const PedidosDisponiveisPage(),
+        '/cliente/pedido-detalhes': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Pedido;
+          return PedidoDetalhesPage(pedido: args);
         },
       },
     );
@@ -125,6 +134,12 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _carregarTipoUsuario();
+  }
+
+  @override
+  void dispose() {
+    _usuarioService.dispose();
+    super.dispose();
   }
 
   Future<void> _carregarTipoUsuario() async {

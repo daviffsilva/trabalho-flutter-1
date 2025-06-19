@@ -31,6 +31,14 @@ class ClienteDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.add_shopping_cart),
+            title: const Text('Criar Pedido'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/criar-pedido');
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.delivery_dining),
             title: const Text('Entregas'),
             onTap: () {
