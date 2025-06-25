@@ -1,63 +1,181 @@
-# API Gateway
+# API Gateway Service
 
-Micro-serviço responsável pelo roteamento centralizado, autenticação e autorização das requisições para os microsserviços do sistema de entregas.
+Gateway de entrada único para todos os microserviços da plataforma de entregas.
 
 ## Funcionalidades
 
-- Roteamento de requisições para microsserviços (autenticação, pedidos, rastreamento)
-- Validação de tokens JWT em todas as requisições protegidas
-- Suporte a CORS
-- Documentação interativa da API com Swagger UI
+### Roteamento de Serviços
 
-## Tecnologias Utilizadas
+O gateway roteia automaticamente as requisições para os microserviços corretos baseado no path:
 
-- Spring Boot 3.2.0
-- Spring Cloud Gateway
-- Spring Security
-- SpringDoc OpenAPI (Swagger)
-- Maven
+| Path | Serviço de Destino | Porta Padrão |
+|------|-------------------|--------------|
+| `/api/auth/**` | Authentication Service | 8081 |
+| `/api/pedidos/**` | Pedidos Service | 8082 |
+| `/api/localizacoes/**` | Rastreamento Service | 8083 |
+| `/api/notification/**` | Notification Service | 8084 |
 
-## Configuração e Execução
+### Recursos Implementados
 
-### Pré-requisitos
+1. **Roteamento Inteligente** - Direcionamento automático baseado em path
+2. **CORS Configurado** - Permite requisições de diferentes origens
+3. **Documentação Centralizada** - Swagger UI agregado
+4. **Configuração Flexível** - URLs dos serviços configuráveis via variáveis de ambiente
 
-- Java 17 ou superior
-- Maven 3.6 ou superior
+## Configuração
 
-### Executando o Projeto
+### Variáveis de Ambiente
 
-1. Clone o repositório
-2. Navegue até o diretório do gateway:
-   ```bash
-   cd backend/gateway
-   ```
-3. Execute o projeto:
-   ```bash
-   mvn spring-boot:run
-   ```
+```bash
+# Service URLs
+AUTH_SERVICE_URL=http://localhost:8081
+PEDIDOS_SERVICE_URL=http://localhost:8082
+RASTREAMENTO_SERVICE_URL=http://localhost:8083
+NOTIFICATION_SERVICE_URL=http://localhost:8084
 
-O gateway estará disponível em `http://localhost:8080`
+```
 
-### Configurações
+### Prerequisitos
 
-As configurações podem ser alteradas no arquivo `application.yml`:
+- Java 17+
+- Maven 3.8+
+- **Todos os microserviços** rodando nas portas configuradas
 
-- **Porta**: 8080
-- **Roteamento**: URLs dos microsserviços
-- **JWT Secret**: Configurável via variável de ambiente `JWT_SECRET`
+## Execução
 
-## Segurança
+### Local
 
-- Todas as rotas protegidas exigem token JWT válido
-- CORS configurado para permitir requisições cross-origin
-- Documentação Swagger acessível sem autenticação
+```bash
+# Compilar o projeto
+mvn clean compile
 
-## Documentação da API
+# Executar os testes
+mvn test
 
-- **Swagger UI**: `http://localhost:8080/swagger-ui.html`
-- **OpenAPI JSON**: `http://localhost:8080/api-docs`
+# Iniciar o gateway
+mvn spring-boot:run
+```
 
-## Variáveis de Ambiente
+O gateway estará disponível na porta **8080**.
 
-- `SERVER_PORT`: Porta do gateway (padrão: 8080)
-- URLs dos microsserviços (ex: `AUTH_SERVICE_URL`, `PEDIDOS_SERVICE_URL`, `RASTREAMENTO_SERVICE_URL`)
+### ⚠️ Ordem de Inicialização
+
+**IMPORTANTE**: O gateway deve ser iniciado **após** todos os microserviços:
+
+```bash
+# 1. Authentication Service
+cd backend/autenticacao
+mvn spring-boot:run &
+
+# 2. Notification Service  
+cd backend/notificacao
+mvn spring-boot:run &
+
+# 3. Pedidos Service
+cd backend/pedidos
+mvn spring-boot:run &
+
+# 4. Rastreamento Service
+cd backend/rastreamento
+mvn spring-boot:run &
+
+# 5. Por último, o Gateway
+cd backend/gateway
+mvn spring-boot:run
+```
+
+## Endpoints Disponíveis
+
+### Através do Gateway (porta 8080)
+
+#### Authentication Service
+- `POST http://localhost:8080/api/auth/register`
+- `POST http://localhost:8080/api/auth/login`
+- `POST http://localhost:8080/api/auth/validate`
+- `GET http://localhost:8080/api/auth/health`
+
+#### Pedidos Service
+- `POST http://localhost:8080/api/pedidos`
+- `GET http://localhost:8080/api/pedidos/{id}`
+- `PUT http://localhost:8080/api/pedidos/{id}/claim`
+- `PUT http://localhost:8080/api/pedidos/{id}/status`
+- `GET http://localhost:8080/api/pedidos/available`
+
+#### Rastreamento Service
+- `POST http://localhost:8080/api/localizacoes/update`
+- `GET http://localhost:8080/api/localizacoes/driver/{driverId}/latest`
+- `GET http://localhost:8080/api/localizacoes/pedido/{pedidoId}/latest`
+- `GET http://localhost:8080/api/localizacoes/driver/{driverId}`
+- `GET http://localhost:8080/api/localizacoes/pedido/{pedidoId}`
+
+#### Notification Service
+- `POST http://localhost:8080/api/notification/send`
+- `POST http://localhost:8080/api/notification/send-bulk`
+- `POST http://localhost:8080/api/notification/send-motoristas`
+- `POST http://localhost:8080/api/notification/send-clientes`
+- `GET http://localhost:8080/api/notification/health`
+
+## Documentação
+
+### Swagger UI
+
+Após iniciar o gateway e todos os serviços:
+- **Gateway Swagger**: http://localhost:8080/swagger-ui.html
+
+### Documentação Individual dos Serviços
+
+- **Authentication**: http://localhost:8081/api/auth/swagger-ui.html
+- **Pedidos**: http://localhost:8082/api/pedidos/swagger-ui.html
+- **Rastreamento**: http://localhost:8083/api/rastreamento/swagger-ui.html
+- **Notification**: http://localhost:8084/api/notification/swagger-ui.html
+
+## Benefícios do Gateway
+
+1. **Ponto de Entrada Único** - Simplifica a integração do frontend
+2. **Load Balancing** - Distribui carga entre instâncias (quando configurado)
+3. **Segurança Centralizada** - Validação de tokens em um ponto
+4. **Monitoramento** - Logs centralizados de todas as requisições
+5. **Versionamento** - Controle de versões de API facilitado
+
+## Configuração de Produção
+
+Para ambiente de produção, considere:
+
+```yaml
+# application-prod.yml
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: autenticacao-service
+          uri: http://auth-service:8081
+          predicates:
+            - Path=/api/auth/**
+        - id: pedidos-service
+          uri: http://pedidos-service:8082
+          predicates:
+            - Path=/api/pedidos/**
+        - id: rastreamento-service
+          uri: http://rastreamento-service:8083
+          predicates:
+            - Path=/api/localizacoes/**
+        - id: notificacao-service
+          uri: http://notification-service:8084
+          predicates:
+            - Path=/api/notification/**
+```
+
+## Troubleshooting
+
+### Gateway não encontra serviços
+- Verifique se todos os microserviços estão rodando
+- Confirme as portas e URLs configuradas
+- Teste conectividade direta com cada serviço
+
+### Problemas de CORS
+- Verifique configuração `DedupeResponseHeader`
+- Confirme origins permitidos nos microserviços
+
+### Timeouts
+- Ajuste timeouts do Spring Cloud Gateway
+- Verifique latência dos microserviços
