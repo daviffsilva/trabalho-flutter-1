@@ -22,7 +22,10 @@ public class PedidoService {
     @Autowired
     private PedidoRepository pedidoRepository;
 
-    public PedidoResponse createPedido(CreatePedidoRequest request) {
+    @Autowired
+    private NotificationClientService notificationClientService;
+
+    public PedidoResponse createPedido(CreatePedidoRequest request, String userToken) {
         Pedido pedido = new Pedido();
         pedido.setOriginAddress(request.getOriginAddress());
         pedido.setDestinationAddress(request.getDestinationAddress());
@@ -43,6 +46,16 @@ public class PedidoService {
         pedido.setUpdatedAt(LocalDateTime.now());
 
         Pedido savedPedido = pedidoRepository.save(pedido);
+        
+        if (userToken != null) {
+            notificationClientService.notifyDriversOfNewPedido(
+                userToken, 
+                savedPedido.getId(), 
+                savedPedido.getOriginAddress(), 
+                savedPedido.getDestinationAddress()
+            );
+        }
+        
         return convertToResponse(savedPedido);
     }
 
@@ -89,14 +102,29 @@ public class PedidoService {
                 .collect(Collectors.toList());
     }
 
-    public PedidoResponse updatePedidoStatus(Long id, UpdatePedidoStatusRequest request) {
+    public PedidoResponse updatePedidoStatus(Long id, UpdatePedidoStatusRequest request, String userToken) {
         Optional<Pedido> pedidoOpt = pedidoRepository.findById(id);
         if (pedidoOpt.isPresent()) {
             Pedido pedido = pedidoOpt.get();
+            PedidoStatus previousStatus = pedido.getStatus();
             pedido.setStatus(request.getStatus());
             pedido.setUpdatedAt(LocalDateTime.now());
             
+            if (request.getStatus() == PedidoStatus.DELIVERED) {
+                pedido.setDeliveredAt(LocalDateTime.now());
+            }
+            
             Pedido updatedPedido = pedidoRepository.save(pedido);
+            
+            if (request.getStatus() == PedidoStatus.DELIVERED && previousStatus != PedidoStatus.DELIVERED && userToken != null) {
+                notificationClientService.notifyClientOfPedidoCompletion(
+                    userToken,
+                    updatedPedido.getClienteId(),
+                    updatedPedido.getId(),
+                    updatedPedido.getDestinationAddress()
+                );
+            }
+            
             return convertToResponse(updatedPedido);
         }
         throw new PedidoException("Pedido não encontrado com ID: " + id);
@@ -132,7 +160,7 @@ public class PedidoService {
                 .collect(Collectors.toList());
     }
 
-    public PedidoResponse claimPedido(Long pedidoId, Long motoristaId) {
+    public PedidoResponse claimPedido(Long pedidoId, Long motoristaId, String userToken) {
         Optional<Pedido> pedidoOpt = pedidoRepository.findById(pedidoId);
         if (pedidoOpt.isEmpty()) {
             throw new PedidoException("Pedido não encontrado com ID: " + pedidoId);
@@ -140,7 +168,6 @@ public class PedidoService {
 
         Pedido pedido = pedidoOpt.get();
         
-        // Check if pedido is available for claiming
         if (pedido.getStatus() != PedidoStatus.PENDING) {
             throw new PedidoException("Pedido não está disponível para reivindicação. Status atual: " + pedido.getStatus());
         }
@@ -149,12 +176,22 @@ public class PedidoService {
             throw new PedidoException("Pedido já foi atribuído a um motorista");
         }
 
-        // Assign the motorista to the pedido and update status
         pedido.setMotoristaId(motoristaId);
         pedido.setStatus(PedidoStatus.ACCEPTED);
         pedido.setUpdatedAt(LocalDateTime.now());
 
         Pedido savedPedido = pedidoRepository.save(pedido);
+        
+        if (userToken != null) {
+            notificationClientService.notifyClientOfPedidoPickup(
+                userToken,
+                savedPedido.getClienteId(),
+                savedPedido.getId(),
+                savedPedido.getOriginAddress(),
+                savedPedido.getDestinationAddress()
+            );
+        }
+        
         return convertToResponse(savedPedido);
     }
 
@@ -166,6 +203,18 @@ public class PedidoService {
 
         Pedido pedido = pedidoOpt.get();
         return pedido.getStatus() == PedidoStatus.PENDING && pedido.getMotoristaId() == null;
+    }
+
+    public PedidoResponse createPedido(CreatePedidoRequest request) {
+        return createPedido(request, null);
+    }
+
+    public PedidoResponse updatePedidoStatus(Long id, UpdatePedidoStatusRequest request) {
+        return updatePedidoStatus(id, request, null);
+    }
+
+    public PedidoResponse claimPedido(Long pedidoId, Long motoristaId) {
+        return claimPedido(pedidoId, motoristaId, null);
     }
 
     private PedidoResponse convertToResponse(Pedido pedido) {
