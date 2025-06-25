@@ -63,13 +63,19 @@ const initializeFirebase = () => {
 
 const sendFirebaseNotification = async (notificationData) => {
     try {
+        console.log('Sending Firebase notification:', notificationData);
+        let data = {};
+        for(let dataKey in notificationData.data){
+            data[dataKey] = JSON.stringify(notificationData.data[dataKey]);
+        }
+
         const message = {
             notification: {
                 title: notificationData.title || 'New Notification',
-                body: notificationData.body || 'You have a new notification',
+                body: notificationData.message || 'You have a new notification',
             },
             data: {
-                ...notificationData.data,
+                ...(data),
                 timestamp: new Date().toISOString()
             },
     
