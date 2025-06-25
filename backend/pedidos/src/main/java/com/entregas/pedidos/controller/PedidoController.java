@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -47,8 +48,11 @@ public class PedidoController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
-    public ResponseEntity<PedidoResponse> createPedido(@Valid @RequestBody CreatePedidoRequest request) {
-        PedidoResponse response = pedidoService.createPedido(request);
+    public ResponseEntity<PedidoResponse> createPedido(
+            @Valid @RequestBody CreatePedidoRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+        String token = extractTokenFromHeader(authHeader);
+        PedidoResponse response = pedidoService.createPedido(request, token);
         return ResponseEntity.ok(response);
     }
 
@@ -130,8 +134,10 @@ public class PedidoController {
     @PutMapping("/{id}/status")
     public ResponseEntity<PedidoResponse> updatePedidoStatus(
             @PathVariable Long id,
-            @Valid @RequestBody UpdatePedidoStatusRequest request) {
-        PedidoResponse response = pedidoService.updatePedidoStatus(id, request);
+            @Valid @RequestBody UpdatePedidoStatusRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+        String token = extractTokenFromHeader(authHeader);
+        PedidoResponse response = pedidoService.updatePedidoStatus(id, request, token);
         return ResponseEntity.ok(response);
     }
 
@@ -158,8 +164,10 @@ public class PedidoController {
     @PutMapping("/{id}/claim")
     public ResponseEntity<PedidoResponse> claimPedido(
             @PathVariable Long id,
-            @Valid @RequestBody ClaimPedidoRequest request) {
-        PedidoResponse response = pedidoService.claimPedido(id, request.getMotoristaId());
+            @Valid @RequestBody ClaimPedidoRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+        String token = extractTokenFromHeader(authHeader);
+        PedidoResponse response = pedidoService.claimPedido(id, request.getMotoristaId(), token);
         return ResponseEntity.ok(response);
     }
 
@@ -175,5 +183,12 @@ public class PedidoController {
     public ResponseEntity<Void> deletePedido(@PathVariable Long id) {
         pedidoService.deletePedido(id);
         return ResponseEntity.ok().build();
+    }
+
+    private String extractTokenFromHeader(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        throw new IllegalArgumentException("Authorization header must be provided with Bearer token");
     }
 }

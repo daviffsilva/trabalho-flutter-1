@@ -1,5 +1,5 @@
 server:
-  port: 8084
+  port: 8082
 
 spring:
   application:
@@ -24,6 +24,10 @@ spring:
     user:
       name: admin
       password: admin
+
+services:
+  notification:
+    url: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
 
 # SpringDoc OpenAPI Configuration
 springdoc:
