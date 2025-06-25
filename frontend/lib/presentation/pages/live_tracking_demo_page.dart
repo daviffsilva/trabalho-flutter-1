@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:entrega_app/presentation/widgets/live_tracking_widget.dart';
+import '../../config/app_config.dart';
 
 class LiveTrackingDemoPage extends StatefulWidget {
   const LiveTrackingDemoPage({Key? key}) : super(key: key);
@@ -202,7 +203,7 @@ class _LiveTrackingDemoPageState extends State<LiveTrackingDemoPage> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    '• URL do WebSocket: ws://localhost:8080/ws',
+                    '• URL do WebSocket: ${AppConfig.websocketUrl}',
                     style: TextStyle(color: Colors.orange.shade700),
                   ),
                   Text(

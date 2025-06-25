@@ -1,7 +1,10 @@
 import 'package:entrega_app/data/models/usuario.dart';
 import 'package:entrega_app/data/models/pedido.dart';
+import 'package:entrega_app/data/models/notification.dart';
 import 'package:entrega_app/data/services/usuario_service.dart';
 import 'package:entrega_app/data/services/theme_service.dart';
+import 'package:entrega_app/data/services/firebase_notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:entrega_app/presentation/screens/cliente/home_page.dart';
 import 'package:entrega_app/presentation/screens/cliente/entregas_page.dart';
 import 'package:entrega_app/presentation/screens/cliente/perfil_page.dart';
@@ -14,12 +17,31 @@ import 'package:entrega_app/presentation/screens/motorista/perfil_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/entrega_detalhes_page.dart';
 import 'package:entrega_app/presentation/screens/motorista/pedidos_disponiveis_page.dart';
 import 'package:entrega_app/presentation/screens/settings_page.dart';
+import 'package:entrega_app/presentation/screens/notifications_page.dart';
 import 'package:entrega_app/presentation/widgets/cliente_drawer.dart';
 import 'package:entrega_app/presentation/widgets/motorista_drawer.dart';
 import 'package:entrega_app/presentation/pages/live_tracking_demo_page.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'firebase_options.dart';
 
-void main() {
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print('Background message received: ${message.messageId}');
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  
+  await FirebaseNotificationService().initialize();
+  
   runApp(const MainApp());
 }
 
@@ -78,6 +100,7 @@ class _MainAppState extends State<MainApp> {
         '/home': (context) => const MainScreen(),
         '/auth': (context) => const AuthPage(),
         '/settings': (context) => const SettingsPage(),
+        '/notifications': (context) => const NotificationsPage(),
         '/live-tracking-demo': (context) => const LiveTrackingDemoPage(),
         '/criar-pedido': (context) => const CriarPedidoPage(),
         '/motorista/entrega-detalhes': (context) {
@@ -131,11 +154,13 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   bool _isMotorista = false;
   final _usuarioService = UsuarioService();
+  final _notificationService = FirebaseNotificationService();
 
   @override
   void initState() {
     super.initState();
     _carregarTipoUsuario();
+    _setupNotifications();
   }
 
   @override
@@ -153,7 +178,50 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  Future<void> _setupNotifications() async {
+    await _notificationService.setupUserTopics();
+    
+    _notificationService.onNotificationReceived = (notification) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${notification.title}: ${notification.body}'),
+            action: SnackBarAction(
+              label: 'Ver',
+              onPressed: () => _handleNotificationTap(notification),
+            ),
+          ),
+        );
+      }
+    };
+    
+    _notificationService.onNotificationTapped = (notification) {
+      _handleNotificationTap(notification);
+    };
+  }
+
+  void _handleNotificationTap(notification) {
+    switch (notification.type) {
+      case NotificationType.novoPedido:
+        if (_isMotorista) {
+          Navigator.pushNamed(context, '/motorista/pedidos-disponiveis');
+        }
+        break;
+      case NotificationType.pedidoAceito:
+      case NotificationType.entregaIniciada:
+      case NotificationType.entregaConcluida:
+        if (notification.data['pedidoId'] != null) {
+          print('Navegar para pedido: ${notification.data['pedidoId']}');
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
   Future<void> _fazerLogout() async {
+    await _notificationService.removeAllTopicSubscriptions();
+    
     await _usuarioService.removerUsuario();
     if (mounted) {
       Navigator.of(context).pushReplacementNamed('/auth');
@@ -185,6 +253,13 @@ class _MainScreenState extends State<MainScreen> {
         backgroundColor: Colors.blue,
         title: Text(_isMotorista ? 'App de Entregas - Motorista' : 'App de Entregas - Cliente'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            tooltip: 'Notificações',
+            onPressed: () {
+              Navigator.pushNamed(context, '/notifications');
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.location_on),
             tooltip: 'Rastreamento em Tempo Real',

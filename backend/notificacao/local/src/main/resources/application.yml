@@ -1,0 +1,54 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: notificacao-service
+  
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:notificacao_db}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:daviffsilva}
+    password: ${DB_PASSWORD:1234}
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:mySecretKey1234567890123456789012345678901234567890}
+
+# Services Configuration
+services:
+  auth:
+    url: ${AUTH_SERVICE_URL:http://localhost:8081}
+
+# AWS Configuration
+aws:
+  region: ${AWS_REGION:us-east-1}
+  sqs:
+    queue-url: ${AWS_SQS_QUEUE_URL}
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+
+# SpringDoc OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api/notification/api-docs
+  swagger-ui:
+    path: /api/notification/swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  packages-to-scan: com.entregas.notificacao.controller
+
+# Logging
+logging:
+  level:
+    com.entregas: DEBUG
+    software.amazon.awssdk: DEBUG 

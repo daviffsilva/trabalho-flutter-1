@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: |
+  SQS Consumer with Firebase Notifications
+  AWS Lambda function that consumes SQS messages and sends Firebase Cloud Messaging notifications.
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+
+Resources:
+  # SQS Queue for notifications
+  NotificationQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${AWS::StackName}-notifications
+      MessageRetentionPeriod: 1209600 # 14 days
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt NotificationDLQ.Arn
+        maxReceiveCount: 3
+
+  # Dead Letter Queue for failed messages
+  NotificationDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${AWS::StackName}-notifications-dlq
+      MessageRetentionPeriod: 1209600 # 14 days
+
+  NotificationConsumerFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: notificacaoFunction/
+      Handler: app.lambdaHandler
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          FIREBASE_PROJECT_ID: entrega-app-62bae
+          FIREBASE_PRIVATE_KEY: '{"privateKey": "-----BEGIN PRIVATE
+            KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCrzapBZGrFfdzv\nieJ8PY1GV8ZrDKKJiI1QOvpCvsUcEn7tS60FXu7upQs0XxmB1gerh6RCMrQ6eKkF\n2JeZ+cZUCqxNryqceBATzV8X8sMYMYZLxKlSRTBBYA1rbmk8cUCiCvfRQpyhpUDR\nFY3XLztk4RfzRH7TtbQv/5RnECsoerFAhd0FtK/g3NQUrek9tjLPJPP3U1Hs9UrT\n10BJCBngzpRapJApwoWfuBXPsyCqA0pWyx6MZ+hBL54irRmoY+Bt0xejUISVGhGT\nVPdZKWJ07Ea/CoUgKoewLQQxgiy82rK6CWfG0ylBO/eM5TixM5oVuKNH6Ih/NCeD\nGTH0V1VdAgMBAAECggEABLEYZ/JD1zJdfP4tPPraV5Qwkz5UVwCvaUQ/DuESVXas\n2DKjnjyuNj60HGFHe0v6yCSrZ/JmCR2/8eytETOoxqVG+NUiiwTdXYkTgn4q9Udu\n9TVA8YH5tCNZIniwr4mhO/ukMmcJC4INj9gwmDKOQu5Bvu89Lm9tJQ1sAleG8jNC\nB4tOU6tdMmnlFoghBGF20MGWZgpK1VIkcWYz1K3gONbG0PE5FOqajA8bAuzb499r\nxX41A4mf2n6kSLh7F/BM+kOi7vAmR1506RdP1jcuVnfYNIFwM8Q7ZfA+QzciFsmm\nhOxMqKhEYc/qpsbEfbQUQDQAeZVIk+ukRIpG8K2fUQKBgQDsuSJvoYFOz4ywg0AA\nqjbEMWZGOWH7RDa/rB16SZ6dlctRkpH3xcoIgI3DnkhCNL5FUojXXRg6W/lTrNV2\nB0YoO0Y3t9qVSKMe4cxuSTr0zx7H7bvKP3VE2mH2eZHKQ6fZFSXGJvRg0AjK6pNN\nVzAPqrI5V7lCbFjzY/BVMY6bEQKBgQC5yyzy4kvJOuxxLQ7ahXudElVq0XnHJDBB\nfD1VlncNaKhEbk+9c+2x1+AcVda+vgfi80/mvjiPBKUj5VZcTSIFyR2rztdrRew7\n4r3vJpmiuo1/VvRxr2fRogeHhS0GQwZks3gXfjIYo4GQTZUSlWZZkQA83pcGG2g1\n/a6/X4sdjQKBgQCZEHx7wepik0FdQQC5bVZMNcTz01bPqaPc++VzlPbC3oDBFgzc\nMUAZj0YbHtWKOaBuIpfo6YEo+x+UQ0UjNEDg8rLMhE0KChWvekE9box4jxRQIiAy\n/iVNiAef36utJWH6s/ngzn9luh51Vog4kg+5kZ38BgT8NiKt/gkAjTKwgQKBgE3S\nb8pwxWPNnZouUGlxvfxl4Id0pLioTNoxKxO9ibKBIvI+7oGhnG+Ax+u2fNO6j10d\no1s4VEJ7pJxrhIf2+whHXHlJk2vohvHyoLIajgHeeERdbNhtq2PgpZy7SMe1rWji\nz6uvfVZarnt+M7HsCEn99YaJieLR+g2ba+XXJFNFAoGAHG/Qgyyzyb0Yz8Sg6tZS\n2zyJSAxW8C2fYbDo/b4r4VNrlCbj0gXfoMZMIeTie/Sn35st6BzvibzFz0Fr8+yA\nlr/fLp4dScvMcKPKy9sLTP+R5HgEF+va2ASAQcrJYlHfhkTvN6K1kNcmjXF1vnne\nhcrgI2NfzOO1zS3qDW74h+I=\n-----END
+            PRIVATE KEY-----\n"}'
+          FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@entrega-app-62bae.iam.gserviceaccount.com
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt NotificationQueue.Arn
+            BatchSize: 10 # Process up to 10 messages at once
+            MaximumBatchingWindowInSeconds: 5 # Wait up to 5 seconds to batch messages
+      MemorySize: 3008
+      Timeout: 30
+
+Outputs:
+  NotificationQueue:
+    Description: SQS Queue for notifications
+    Value: !Ref NotificationQueue
+    Export:
+      Name: !Sub ${AWS::StackName}-NotificationQueue
+
+  NotificationQueueUrl:
+    Description: SQS Queue URL for notifications
+    Value: !Ref NotificationQueue
+    Export:
+      Name: !Sub ${AWS::StackName}-NotificationQueueUrl
+
+  NotificationDLQ:
+    Description: Dead Letter Queue for failed notifications
+    Value: !Ref NotificationDLQ
+    Export:
+      Name: !Sub ${AWS::StackName}-NotificationDLQ
+
+  NotificationConsumerFunction:
+    Description: Notification Consumer Lambda Function ARN
+    Value: !GetAtt NotificationConsumerFunction.Arn
+
+  NotificationConsumerFunctionIamRole:
+    Description: Implicit IAM Role created for Notification Consumer function
+    Value: !GetAtt NotificationConsumerFunctionRole.Arn

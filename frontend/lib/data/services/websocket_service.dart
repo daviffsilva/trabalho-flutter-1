@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:entrega_app/data/models/localizacao.dart';
+import '../../config/app_config.dart';
 
 class WebSocketService {
   static final WebSocketService _instance = WebSocketService._internal();
@@ -17,9 +18,6 @@ class WebSocketService {
   bool _isConnected = false;
   Timer? _reconnectTimer;
   
-  static const String _baseUrl = 'ws://localhost:8083';
-  static const String _wsEndpoint = '/ws';
-  
   Stream<Localizacao> get locationStream => _locationController.stream;
   Stream<bool> get connectionStateStream => _connectionStateController.stream;
   bool get isConnected => _isConnected;
@@ -32,7 +30,7 @@ class WebSocketService {
 
     try {
       _isConnecting = true;
-      final uri = Uri.parse('$_baseUrl$_wsEndpoint');
+      final uri = Uri.parse(AppConfig.websocketUrl);
       _channel = WebSocketChannel.connect(uri);
       
       _channel!.stream.listen(

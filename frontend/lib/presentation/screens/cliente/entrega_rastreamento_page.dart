@@ -157,7 +157,6 @@ class _EntregaRastreamentoPageState extends State<EntregaRastreamentoPage> {
         ),
       );
     } catch (e) {
-      // Camera movement failed, ignore
     }
   }
 
@@ -169,7 +168,6 @@ class _EntregaRastreamentoPageState extends State<EntregaRastreamentoPage> {
         CameraUpdate.newLatLngBounds(bounds, 50),
       );
     } catch (e) {
-      // Camera movement failed, ignore
     }
   }
 

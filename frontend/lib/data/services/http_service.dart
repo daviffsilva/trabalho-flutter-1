@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import '../../config/app_config.dart';
 
 class HttpService {
-  static const String _baseUrl = 'http://localhost:8080';
+  static String get _baseUrl => AppConfig.apiBaseUrl;
   final AuthService _authService = AuthService();
   final http.Client _client = http.Client();
 
