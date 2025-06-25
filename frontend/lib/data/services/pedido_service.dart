@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/pedido.dart';
 import 'auth_service.dart';
-import '../../config/api_config.dart';
+import '../../config/app_config.dart';
 
 class PedidoService {
-  static const String _baseUrl = ApiConfig.pedidosBaseUrl;
+  static String get _baseUrl => AppConfig.apiBaseUrl;
   final AuthService _authService = AuthService();
   final http.Client _client = http.Client();
 

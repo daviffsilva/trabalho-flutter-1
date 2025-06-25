@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:entrega_app/data/services/theme_service.dart';
+import '../widgets/notification_test_widget.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -41,6 +43,8 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       body: ListView(
         children: [
+          if (kDebugMode) const NotificationTestWidget(),
+          
           ListTile(
             title: const Text('Tema'),
             subtitle: Text(

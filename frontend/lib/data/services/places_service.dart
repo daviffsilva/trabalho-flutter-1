@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../config/api_config.dart';
+import '../../config/app_config.dart';
 
 class PlacesService {
-  static const String _apiKey = ApiConfig.googleMapsApiKey;
-  static const String _baseUrl = 'https://maps.googleapis.com/maps/api';
+  static String get _apiKey => AppConfig.googleMapsApiKey;
+  static String get _baseUrl => AppConfig.googleMapsBaseUrl;
 
   Future<List<PlacePrediction>> searchPlaces(String input) async {
     if (input.isEmpty) return [];
